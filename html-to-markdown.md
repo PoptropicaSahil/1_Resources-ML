@@ -22,6 +22,8 @@ Bookmarks
 
 ### NLP
 
+[FineTune LLAMA2 on custom dataset nice](https://github.com/curiousily/Get-Things-Done-with-Prompt-Engineering-and-LangChain/blob/master/14.fine-tuning-llama-2-7b-on-custom-dataset.ipynb) 
+
 [TAO Toolkit Get Started | NVIDIA Developer](https://developer.nvidia.com/tao-toolkit-get-started)
 
 [NAACL 2019 Tutorial on Transfer Learning in Natural Language Processing - Colaboratory](https://colab.research.google.com/drive/1iDHCYIrWswIKp-n-pOg69xLoZO09MEgf)
