@@ -1,0 +1,4 @@
+document.querySelector('embed').style.filter = 'invert()'
+
+# to reverse
+document.querySelector('embed').style.filter = ''
