@@ -6,7 +6,7 @@
 ### Clarification
 - What is the dependent variable? What is/are the input variables
 - How has the problem been approached in the past by the business. Is there a baseline that we have to beat. By how much
-- Is ML even needed? Would simpe heuristics or rule-based approaches work? 
+- Is ML even needed? Would simple heuristics or rule-based approaches work? 
 - Is it legal or ethical to apply ML to this problem
 - How would the end user benefit from the solution? How would they use the solution (integration with existing solution or standalone)
 - Is there a clear value add to the business?
