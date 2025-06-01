@@ -1,5 +1,7 @@
 # Singular Value Decomposition (SVD) - Notes
 
+> ref from Gregory Hundersen's blog neat post at <https://gregorygundersen.com/blog/2018/12/10/svd/>. All credits to him!
+
 ## Core Definition
 
 Any matrix M ∈ C^(m×n) can be decomposed as:
@@ -33,7 +35,7 @@ Where:
 
 ### Step 1: Name the Components
 
-![alt text](svd-img2.png) 
+![alt text](svd-img2.png)
 
 For 2D case with orthonormal basis vectors v₁, v₂ (for the right-side space):
 
