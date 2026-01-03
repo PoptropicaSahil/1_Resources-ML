@@ -178,7 +178,8 @@ $$
 
 The penalty term $\lambda\mathbf{I}$ improves the conditioning of $\mathbf{X}^T\mathbf{X}$, ensuring invertibility even when $\mathbf{X}^T\mathbf{X}$ is singular or near-singular. This makes ridge regression particularly effective for handling **multicollinearity**, where predictor variables are highly correlated.
 
-![The sigmoid function transforms linear combinations of features into probabilities between 0 and 1, forming the basis of logistic regression.](https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/f30b4774216d0c09e80fe970f6d968eb/94c45171-6790-4dfd-9eb8-36288241d11c/e31a656f.png)
+![The sigmoid function transforms linear combinations of features into probabilities between 0 and 1, forming the basis of logistic regression.](images/tech1.png)
+
 
 The sigmoid function transforms linear combinations of features into probabilities between 0 and 1, forming the basis of logistic regression.
 
@@ -198,7 +199,7 @@ Unlike ridge regression, lasso has no closed-form solution due to the non-differ
 
 **Why Lasso Produces Sparse Solutions:** The L1 penalty gradient is constant: $\frac{\partial}{\partial \beta_j}(\lambda|\beta_j|) = \lambda \cdot \text{sign}(\beta_j)$. This **constant shrinkage** applies uniformly regardless of coefficient magnitude, pushing small coefficients exactly to zero. Geometrically, the constraint $\sum_{j=1}^n |\beta_j| \leq t$ forms a rhombus (in 2D) or hyperdiamond (in higher dimensions) with sharp corners on the coordinate axes. Loss function contours are more likely to intersect these corners where some coordinates equal zero, yielding sparse solutions that perform automatic feature selection.
 
-![Geometric interpretation of L1 and L2 regularization showing why L1 leads to sparse solutions (coefficients at zero) while L2 only shrinks coefficients.](https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/f30b4774216d0c09e80fe970f6d968eb/3a180afa-f6a1-4873-b140-51a6744f355f/9331d380.png)
+![Geometric interpretation of L1 and L2 regularization showing why L1 leads to sparse solutions (coefficients at zero) while L2 only shrinks coefficients.](images/tech2.png)
 
 Geometric interpretation of L1 and L2 regularization showing why L1 leads to sparse solutions (coefficients at zero) while L2 only shrinks coefficients.
 
@@ -259,7 +260,7 @@ $$
 
 For two features, this is a line; for three features, a plane; and for $n$ features, an $(n-1)$-dimensional hyperplane. **Logistic regression is thus a linear classifier**, despite the nonlinear sigmoid transformation. Points on one side of the hyperplane are classified as class 1, while points on the other side are classified as class 0.
 
-![The decision boundary in logistic regression is a hyperplane that separates the feature space into regions where P(y=1|x) > 0.5 and P(y=1|x) < 0.5.](https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/f30b4774216d0c09e80fe970f6d968eb/dc9237c7-4093-4094-84c5-3ce9f01dcd7a/2c5673b4.png)
+![The decision boundary in logistic regression is a hyperplane that separates the feature space into regions where P(y=1|x) > 0.5 and P(y=1|x) < 0.5.](images/tech3.png)
 
 The decision boundary in logistic regression is a hyperplane that separates the feature space into regions where P(y=1|x) > 0.5 and P(y=1|x) < 0.5.
 

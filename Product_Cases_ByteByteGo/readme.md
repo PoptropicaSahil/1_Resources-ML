@@ -2,7 +2,7 @@
 
 > SEE ALSO: junfanz1 Awesome-AI-Engineer-Review main System Design -- `ML System Design Interview.md`
 
-I used Perplexity's brilliant *Labs* mode for the cases. Topics for the studies are taken from ByteByteGo's ML System Design Course
+I used Perplexity's brilliant *Labs* mode for the cases. Markdown conversions aren't perfect yet. Will refine them with time. Topics for the studies are taken from ByteByteGo's ML System Design Course
 
 > Ideally should have purchased the book but all good
 
