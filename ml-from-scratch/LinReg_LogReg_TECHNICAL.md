@@ -21,13 +21,14 @@ y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \cdots + \beta_n x_{in} + \var
 $$
 
 > **Feature vector for observation $i$: written as COLUMN VECTORS** *(stupid onlyy)*
-$$
+
+```math
 \mathbf{x}_i = \begin{bmatrix} 1 \\ x_{i1} \\ x_{i2} \\ \vdots \\ x_{in} \end{bmatrix}
 
 ~ \text{and} ~
 
 \mathbf{\beta} = \begin{bmatrix} \beta_0 \\ \beta_1 \\ \beta_2 \\ \vdots \\ \beta_n \end{bmatrix}
-$$
+```
 
 The same equation can be written as an inner product:
 
@@ -35,15 +36,15 @@ $$ y_i = \mathbf{x}_i^T \boldsymbol{\beta} + \varepsilon_i$$
 
 Stack all $y_i$ values into a vector:
 
-$$ 
+```math
 \mathbf{y} = \begin{bmatrix} y_1 \\ y_2 \\ \vdots \\ y_m \end{bmatrix}
-$$
+```
 
 Stack all feature vectors $ \mathbf{x}_i^T $ as rows of a matrix:
 
-$$
+```math
 \mathbf{X} = \begin{bmatrix} \mathbf{x}_1^T \\ \mathbf{x}_2^T \\ \vdots \\ \mathbf{x}_m^T \end{bmatrix}
-$$
+```
 
 In matrix notation, this becomes:
 
@@ -203,9 +204,9 @@ Geometric interpretation of L1 and L2 regularization showing why L1 leads to spa
 
 The soft-thresholding operator implements lasso updates in coordinate descent:
 
-$$
+```math
 \beta_j = \begin{cases} \rho - \lambda & \text{if } \rho > \lambda \\ 0 & \text{if } |\rho| \leq \lambda \\ \rho + \lambda & \text{if } \rho < -\lambda \end{cases}
-$$
+```
 
 where $\rho$ is the partial residual correlation. This explicitly sets coefficients to zero when their contribution to reducing loss is insufficient to overcome the penalty.
 
