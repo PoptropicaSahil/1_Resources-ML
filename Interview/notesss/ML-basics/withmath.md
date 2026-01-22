@@ -1,6 +1,5 @@
 # High-Depth ML & Data Science Interview Questions (Math-Focused)
 
-
 ---
 
 ## 1. Logistic Regression: Loss Function Derivation
@@ -11,19 +10,34 @@ Derive the Binary Cross-Entropy (Log-Loss) function for Logistic Regression usin
 **Answer:**
 
 Assume the target  $y \in {0,1}$  follows a Bernoulli distribution with probability
-$$ p = \hat{y} = \sigma(w^T x) $$
+
+```math
+p = \hat{y} = \sigma(w^T x) 
+```
 
 The probability mass function is:
-$$ P(y \mid x; w) = \hat{y}^y (1 - \hat{y})^{1 - y} $$
+
+```math
+P(y \mid x; w) = \hat{y}^y (1 - \hat{y})^{1 - y} 
+```
 
 For $N$ independent samples, the likelihood is:
-$$ L(w) = \prod_{i=1}^{N} (\hat{y}_i)^{y_i} (1 - \hat{y}_i)^{1 - y_i} $$
+
+```math
+L(w) = \prod_{i=1}^{N} (\hat{y}_i)^{y_i} (1 - \hat{y}_i)^{1 - y_i} 
+```
 
 We take the log to simplify differentiation and avoid numerical underflow:
-$$ \ell(w) = \sum_{i=1}^{N} \left[ y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i) \right] $$
+
+```math
+\ell(w) = \sum_{i=1}^{N} \left[ y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i) \right] 
+```
 
 Negating and averaging gives the Binary Cross-Entropy loss:
-$$ J(w) = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i) \right] $$
+
+```math
+J(w) = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i) \right] 
+```
 
 ---
 
@@ -35,10 +49,16 @@ How does a Random Forest compute Gini Importance (Mean Decrease Impurity) for a 
 **Answer:**
 
 The Gini Impurity of a node $t$ with class probabilities $p_i$ is:
-$$ G(t) = 1 - \sum_{i=1}^{C} p_i^2 $$
+
+```math
+G(t) = 1 - \sum_{i=1}^{C} p_i^2 
+```
 
 If node $t$ is split into left and right children using feature $X_j$, the impurity decrease is:
-$$ \Delta G(t, X_j) = G(t) - \left( \frac{N_{t_L}}{N_t} G(t_L) + \frac{N_{t_R}}{N_t} G(t_R) \right) $$
+
+```math
+\Delta G(t, X_j) = G(t) - \left( \frac{N_{t_L}}{N_t} G(t_L) + \frac{N_{t_R}}{N_t} G(t_R) \right) 
+```
 
 The importance of feature $X_j$ is the sum of $\Delta G$ over all splits where it is used, averaged across all trees.
 
@@ -54,7 +74,10 @@ How does XGBoost differ from standard Gradient Boosting in its objective formula
 Standard Gradient Boosting uses first-order gradients. XGBoost uses a second-order Taylor approximation.
 
 At iteration $t$, the objective is approximated as:
-$$ \mathcal{L}^{(t)} \approx \sum_{i=1}^{N} \left[ l(y_i, \hat{y}_i^{(t-1)}) + g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \Omega(f_t) $$
+
+```math
+\mathcal{L}^{(t)} \approx \sum_{i=1}^{N} \left[ l(y_i, \hat{y}_i^{(t-1)}) + g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \Omega(f_t) 
+```
 
 Where:
 
@@ -74,7 +97,10 @@ Why is self-attention scaled by $ \sqrt{d_k} $ in Transformers?
 **Answer:**
 
 If $ Q $ and $ K $ have zero mean and unit variance, then:
-$$ \text{Var}(QK^T) = d_k $$
+
+```math
+\text{Var}(QK^T) = d_k 
+```
 
 Large dot products cause the Softmax to saturate, leading to near-zero gradients. Dividing by $ \sqrt{d_k} $ normalizes the variance, keeping Softmax in its sensitive region.
 
@@ -88,13 +114,20 @@ Explain the objective of a Hard Margin SVM and the motivation for the dual form.
 **Answer:**
 
 Primal problem:
-$$ \min_{w,b} \frac{1}{2} |w|^2 $$
+
+```math
+\min_{w,b} \frac{1}{2} |w|^2 
+```
+
 subject to:
-$$ y_i (w^T x_i + b) \geq 1 \quad \forall i $$
+
+```math
+y_i (w^T x_i + b) \geq 1 \quad \forall i 
+```
 
 The dual formulation:
 
-* Depends only on dot products $ x_i^T x_j $ 
+* Depends only on dot products $ x_i^T x_j $
 * Enables the kernel trick
 * Is computationally efficient in high dimensions
 
@@ -108,10 +141,16 @@ Why do eigenvectors of the covariance matrix represent directions of maximum var
 **Answer:**
 
 Variance along direction $ u $ is:
-$$ \text{Var}(Xu) = u^T \Sigma u $$
+
+```math
+\text{Var}(Xu) = u^T \Sigma u 
+```
 
 Maximize subject to $ u^T u = 1 $. Using Lagrange multipliers:
-$$ \Sigma u = \lambda u $$
+
+```math
+\Sigma u = \lambda u 
+```
 
 Thus, eigenvectors define principal directions, and eigenvalues represent variance magnitude.
 
@@ -125,7 +164,10 @@ Show that L1 corresponds to a Laplace prior and L2 to a Gaussian prior.
 **Answer:**
 
 Posterior:
-$$ \log P(w \mid D) = \log P(D \mid w) + \log P(w) $$
+
+```math
+\log P(w \mid D) = \log P(D \mid w) + \log P(w) 
+```
 
 * L2: $ w \sim \mathcal{N}(0, \tau^2) \Rightarrow \log P(w) \propto -|w|^2 $
 * L1: $ w \sim \text{Laplace}(0, b) \Rightarrow \log P(w) \propto -|w|_1 $
@@ -142,10 +184,16 @@ Why does Sigmoid cause vanishing gradients?
 **Answer:**
 
 Sigmoid derivative:
-$$ \sigma'(z) = \sigma(z)(1 - \sigma(z)) \leq 0.25 $$
+
+```math
+\sigma'(z) = \sigma(z)(1 - \sigma(z)) \leq 0.25 
+```
 
 In a deep network, gradients scale as:
-$$ (0.25)^L $$
+
+```math
+(0.25)^L 
+```
 
 This exponential decay causes early layers to stop learning.
 
@@ -159,13 +207,22 @@ Where is the naive assumption applied in Naive Bayes?
 **Answer:**
 
 Bayes theorem:
-$$ P(y \mid x_1, \dots, x_n) \propto P(x_1, \dots, x_n \mid y) P(y) $$
+
+```math
+P(y \mid x_1, \dots, x_n) \propto P(x_1, \dots, x_n \mid y) P(y) 
+```
 
 Naive assumption:
-$$ P(x_1, \dots, x_n \mid y) \approx \prod_{i=1}^{n} P(x_i \mid y) $$
+
+```math
+P(x_1, \dots, x_n \mid y) \approx \prod_{i=1}^{n} P(x_i \mid y) 
+```
 
 Final rule:
-$$ \hat{y} = \arg\max_y P(y) \prod_{i=1}^{n} P(x_i \mid y) $$
+
+```math
+\hat{y} = \arg\max_y P(y) \prod_{i=1}^{n} P(x_i \mid y) 
+```
 
 ---
 
@@ -177,7 +234,10 @@ What is the K-Means objective and does it guarantee a global optimum?
 **Answer:**
 
 Objective:
-$$ J = \sum_{j=1}^{K} \sum_{x_i \in C_j} |x_i - \mu_j|^2 $$
+
+```math
+J = \sum_{j=1}^{K} \sum_{x_i \in C_j} |x_i - \mu_j|^2 
+```
 
 K-Means alternates between:
 
@@ -205,9 +265,17 @@ Mathematically, the expected value $E[m_t]$ corresponds to $E[g_t] \cdot (1 - \b
 Let $y = f(x) + \epsilon$, where $\epsilon$ has mean 0 and variance $\sigma^2$.
 The expected MSE at a point $x$ is $E[(y - \hat{f}(x))^2]$.
 By adding and subtracting $E[\hat{f}(x)]$ (the average prediction over many dataset realizations):
- $$ E[(y - \hat{f})^2] = E[(y - f + f - E[\hat{f}] + E[\hat{f}] - \hat{f})^2]  $$
+
+ ```math
+E[(y - \hat{f})^2] = E[(y - f + f - E[\hat{f}] + E[\hat{f}] - \hat{f})^2]  
+```
+
 Expanding the square and using the independence of $\epsilon$, cross-terms cancel out, leaving:
- $$ \text{MSE} = \underbrace{(E[\hat{f}(x)] - f(x))^2}_{\text{Bias}^2} + \underbrace{E[(\hat{f}(x) - E[\hat{f}(x)])^2]}_{\text{Variance}} + \underbrace{\sigma^2}_{\text{Irreducible Error}}  $$
+
+ ```math
+\text{MSE} = \underbrace{(E[\hat{f}(x)] - f(x))^2}_{\text{Bias}^2} + \underbrace{E[(\hat{f}(x) - E[\hat{f}(x)])^2]}_{\text{Variance}} + \underbrace{\sigma^2}_{\text{Irreducible Error}}  
+```
+
 This proves that reducing error requires balancing the model's ability to fit data (Bias) vs. stability across datasets (Variance).
 
 ## 13. AdaBoost: Exponential Loss & Update Rule
@@ -217,9 +285,17 @@ This proves that reducing error requires balancing the model's ability to fit da
 **Answer:**
 AdaBoost greedily minimizes the Exponential Loss. The loss is differentiable and acts as an upper bound to the 0-1 loss (classification error).
 When we solve for the optimal weight $\alpha_t$ for the new weak learner $h_t$ that minimizes this loss:
- $$ \frac{\partial L}{\partial \alpha_t} = 0 \implies \sum_{y_i = h_t(x_i)} w_i e^{-\alpha} - \sum_{y_i \neq h_t(x_i)} w_i e^{\alpha} = 0  $$
+
+ ```math
+\frac{\partial L}{\partial \alpha_t} = 0 \implies \sum_{y_i = h_t(x_i)} w_i e^{-\alpha} - \sum_{y_i \neq h_t(x_i)} w_i e^{\alpha} = 0  
+```
+
 Let $\epsilon_t$ be the weighted error rate. Solving for $\alpha$ gives the exact closed-form solution:
- $$ \alpha_t = \frac{1}{2} \ln\left(\frac{1 - \epsilon_t}{\epsilon_t}\right)  $$
+
+ ```math
+\alpha_t = \frac{1}{2} \ln\left(\frac{1 - \epsilon_t}{\epsilon_t}\right)  
+```
+
 This specific update ensures that the weights of misclassified points are increased exactly enough so that the new weak learner would have 50% accuracy on the _re-weighted_ data.
 
 ## 14. Batch Normalization: Backpropagation
@@ -228,9 +304,17 @@ This specific update ensures that the weights of misclassified points are increa
 
 **Answer:**
 In Batch Norm, the output $y_i$ depends on input $x_i$ **directly** (via normalization) and **indirectly** (because $x_i$ contributes to $\mu$ and $\sigma^2$ of the batch).
- $$ \hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}  $$
+
+ ```math
+\hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}  
+```
+
 The chain rule must account for all paths:
- $$ \frac{\partial L}{\partial x_i} = \frac{\partial L}{\partial \hat{x}_i} \cdot \frac{\partial \hat{x}_i}{\partial x_i} + \sum_{j=1}^{m} \frac{\partial L}{\partial \hat{x}_j} \cdot \left( \frac{\partial \hat{x}_j}{\partial \mu_B} \frac{\partial \mu_B}{\partial x_i} + \frac{\partial \hat{x}_j}{\partial \sigma_B^2} \frac{\partial \sigma_B^2}{\partial x_i} \right)  $$
+
+ ```math
+\frac{\partial L}{\partial x_i} = \frac{\partial L}{\partial \hat{x}_i} \cdot \frac{\partial \hat{x}_i}{\partial x_i} + \sum_{j=1}^{m} \frac{\partial L}{\partial \hat{x}_j} \cdot \left( \frac{\partial \hat{x}_j}{\partial \mu_B} \frac{\partial \mu_B}{\partial x_i} + \frac{\partial \hat{x}_j}{\partial \sigma_B^2} \frac{\partial \sigma_B^2}{\partial x_i} \right)  
+```
+
 If you ignore the terms involving $\mu$ and $\sigma$, the network "cheats" by manipulating the batch statistics to minimize loss without learning useful features, leading to training instability or collapse.
 
 ## 15. CNN: Max Pooling Gradient
@@ -265,7 +349,11 @@ This ensures we don't need to modify the weights at test time, making deployment
 The AUC calculates the integral of TPR (True Positive Rate) vs. FPR (False Positive Rate).
 Consider a dataset with $N^+$ positive and $N^-$ negative samples.
 We can view the AUC as counting pairs:
- $$ \text{AUC} = \frac{1}{N^+ N^-} \sum_{i=1}^{N^+} \sum_{j=1}^{N^-} \mathbb{I}(Score(x_i^+) > Score(x_j^-))  $$
+
+ ```math
+\text{AUC} = \frac{1}{N^+ N^-} \sum_{i=1}^{N^+} \sum_{j=1}^{N^-} \mathbb{I}(Score(x_i^+) > Score(x_j^-))  
+```
+
 This sum represents the normalized count of all pairs where the classifier correctly assigns a higher probability to the positive sample than the negative one. This is exactly the probability $P(Score(x^+) > Score(x^-))$ (equivalent to the **Mann-Whitney U Test** statistic).
 
 ## 18. GMM vs K-Means: Soft Assignment
@@ -275,7 +363,11 @@ This sum represents the normalized count of all pairs where the classifier corre
 **Answer:**
 K-Means performs **Hard Assignment**: A point $x_i$ belongs to cluster $k$ with probability 1 or 0 (indicator function).
 GMM performs **Soft Assignment** by calculating "Responsibility" $\gamma(z_{nk})$:
- $$ \gamma(z_{nk}) = P(z_k=1 | x_n) = \frac{\pi_k \mathcal{N}(x_n | \mu_k, \Sigma_k)}{\sum_{j=1}^{K} \pi_j \mathcal{N}(x_n | \mu_j, \Sigma_j)}  $$
+
+ ```math
+\gamma(z_{nk}) = P(z_k=1 | x_n) = \frac{\pi_k \mathcal{N}(x_n | \mu_k, \Sigma_k)}{\sum_{j=1}^{K} \pi_j \mathcal{N}(x_n | \mu_j, \Sigma_j)}  
+```
+
 This is the posterior probability that point $x_n$ came from component $k$. This allows GMM to model uncertainty and overlapping clusters, whereas K-Means assumes spherical, non-overlapping clusters.
 
 ## 19. Positional Encodings: Linear Property
@@ -286,7 +378,11 @@ This is the posterior probability that point $x_n$ came from component $k$. This
 We use sinusoidal functions of different frequencies: $PE_{(pos, 2i)} = \sin(pos/10000^{2i/d})$.
 The key property is that for any fixed offset $k$, $PE(pos+k)$ can be represented as a **linear function** of $PE(pos)$.
 Using the rotation formula $\sin(A+B) = \sin A \cos B + \cos A \sin B$:
- $$ \begin{bmatrix} \sin(pos+k) \\ \cos(pos+k) \end{bmatrix} = \begin{bmatrix} \cos(k) & \sin(k) \\ -\sin(k) & \cos(k) \end{bmatrix} \begin{bmatrix} \sin(pos) \\ \cos(pos) \end{bmatrix}  $$
+
+ ```math
+\begin{bmatrix} \sin(pos+k) \\ \cos(pos+k) \end{bmatrix} = \begin{bmatrix} \cos(k) & \sin(k) \\ -\sin(k) & \cos(k) \end{bmatrix} \begin{bmatrix} \sin(pos) \\ \cos(pos) \end{bmatrix}  
+```
+
 This rotation matrix depends only on $k$, allowing the model's self-attention weights (which are linear projections) to easily learn patterns based on relative distance $k$ regardless of absolute position $pos$.
 
 ## 20. Loss Functions: MSE for Classification
@@ -309,8 +405,15 @@ This rotation matrix depends only on $k$, allowing the model's self-attention we
 **Answer:**
 Let a residual block be defined as $H(x) = F(x) + x$, where $F(x)$ is the learnable non-linear function.
 During backpropagation, the gradient of the loss $L$ with respect to input $x$ is:
-$$  \frac{\partial L}{\partial x} = \frac{\partial L}{\partial H} \cdot \frac{\partial H}{\partial x} = \frac{\partial L}{\partial H} \cdot \left( \frac{\partial F}{\partial x} + 1 \right)  $$
-$$  \frac{\partial L}{\partial x} = \frac{\partial L}{\partial H} \cdot \frac{\partial F}{\partial x} + \frac{\partial L}{\partial H}  $$
+
+```math
+ \frac{\partial L}{\partial x} = \frac{\partial L}{\partial H} \cdot \frac{\partial H}{\partial x} = \frac{\partial L}{\partial H} \cdot \left( \frac{\partial F}{\partial x} + 1 \right)  
+```
+
+```math
+ \frac{\partial L}{\partial x} = \frac{\partial L}{\partial H} \cdot \frac{\partial F}{\partial x} + \frac{\partial L}{\partial H}  
+```
+
 The term $+ \frac{\partial L}{\partial H}$ acts as a "gradient superhighway," ensuring that the gradient can flow directly from deeper layers to shallower layers without being diminished (multiplied by small numbers), even if $\frac{\partial F}{\partial x}$ approaches zero.
 
 ### 22. Linear Regression: Invertibility
@@ -330,11 +433,23 @@ In this case, the determinant $|X^T X| = 0$, and there are infinitely many solut
 **Answer:**
 We want to preserve the **variance of activations** across layers to prevent signals from exploding or vanishing.
 For a linear neuron $y = \sum w_i x_i$:
-$$  Var(y) = Var(\sum w_i x_i)  $$
+
+```math
+ Var(y) = Var(\sum w_i x_i)  
+```
+
 Assuming inputs $x$ and weights $w$ are independent and have mean 0:
-$$  Var(y) = n_{in} \cdot Var(w_i) \cdot Var(x_i)  $$
+
+```math
+ Var(y) = n_{in} \cdot Var(w_i) \cdot Var(x_i)  
+```
+
 To keep the signal strength constant ($Var(y) = Var(x)$), we must enforce:
-$$  n_{in} \cdot Var(w_i) = 1 \implies Var(w_i) = \frac{1}{n_{in}}  $$
+
+```math
+ n_{in} \cdot Var(w_i) = 1 \implies Var(w_i) = \frac{1}{n_{in}}  
+```
+
 If $Var(w)$ is too small, activations shrink to 0; if too large, they explode to infinity (or saturate activations).
 
 ### 24. t-SNE: KL Divergence Asymmetry
@@ -356,7 +471,11 @@ t-SNE prioritizes keeping similar points together, hence $KL(P||Q)$.
 It is **not** just a scalar multiplication if the input has multiple channels.
 If the input tensor is $H \times W \times C_{in}$ and we apply $C_{out}$ filters of size $1 \times 1 \times C_{in}$:
 Each $1 \times 1$ filter performs a **linear combination** across the depth (channels) for every pixel position $(i, j)$:
-$$  \text{Output}_{i,j,k} = \sum_{c=1}^{C_{in}} w_{k,c} \cdot \text{Input}_{i,j,c} + b_k  $$
+
+```math
+ \text{Output}_{i,j,k} = \sum_{c=1}^{C_{in}} w_{k,c} \cdot \text{Input}_{i,j,c} + b_k  
+```
+
 If $C_{out} < C_{in}$, this effectively projects the high-dimensional feature vector at each pixel into a lower-dimensional space, reducing computational cost for subsequent layers (like in Inception/GoogLeNet).
 
 ### 26. Softmax: Shift Invariance
@@ -365,9 +484,17 @@ If $C_{out} < C_{in}$, this effectively projects the high-dimensional feature ve
 
 **Answer:**
 Let $z$ be the input vector and $c$ be a scalar constant.
-$$  \text{Softmax}(z+c)_i = \frac{e^{z_i + c}}{\sum_j e^{z_j + c}} = \frac{e^{z_i} e^c}{\sum_j e^{z_j} e^c}  $$
+
+```math
+ \text{Softmax}(z+c)_i = \frac{e^{z_i + c}}{\sum_j e^{z_j + c}} = \frac{e^{z_i} e^c}{\sum_j e^{z_j} e^c}  
+```
+
 The $e^c$ term factors out of the sum in the denominator and cancels with the numerator:
-$$  = \frac{e^{z_i} e^c}{e^c \sum_j e^{z_j}} = \frac{e^{z_i}}{\sum_j e^{z_j}} = \text{Softmax}(z)_i  $$
+
+```math
+ = \frac{e^{z_i} e^c}{e^c \sum_j e^{z_j}} = \frac{e^{z_i}}{\sum_j e^{z_j}} = \text{Softmax}(z)_i  
+```
+
 **Usefulness:** In implementation, we calculate $\text{Softmax}(z - \max(z))$. By subtracting the maximum value, all exponents become $\le 0$. This prevents floating-point **overflow** (calculating $e^{1000}$), which would otherwise result in NaNs.
 
 ### 27. EM Algorithm: Jensen's Inequality
@@ -377,9 +504,17 @@ $$  = \frac{e^{z_i} e^c}{e^c \sum_j e^{z_j}} = \frac{e^{z_i}}{\sum_j e^{z_j}} = 
 **Answer:**
 We want to maximize $l(\theta) = \log P(X|\theta) = \log \sum_Z P(X, Z|\theta)$.
 Direct maximization is hard due to the sum inside the log. We introduce a distribution $Q(Z)$ (posterior approximation).
-$$  \log \sum_Z P(X, Z|\theta) = \log \sum_Z Q(Z) \frac{P(X, Z|\theta)}{Q(Z)} = \log E_Q \left[ \frac{P(X, Z|\theta)}{Q(Z)} \right]  $$
+
+```math
+ \log \sum_Z P(X, Z|\theta) = \log \sum_Z Q(Z) \frac{P(X, Z|\theta)}{Q(Z)} = \log E_Q \left[ \frac{P(X, Z|\theta)}{Q(Z)} \right]  
+```
+
 Since $\log$ is a **concave** function, Jensen's Inequality states $\log E[Y] \ge E[\log Y]$.
-$$  \log E_Q \left[ \dots \right] \ge E_Q \left[ \log \frac{P(X, Z|\theta)}{Q(Z)} \right]  $$
+
+```math
+ \log E_Q \left[ \dots \right] \ge E_Q \left[ \log \frac{P(X, Z|\theta)}{Q(Z)} \right]  
+```
+
 This term (the **ELBO**) is easier to maximize. The E-step aligns the bound with the likelihood, and the M-step maximizes the bound.
 
 ### 28. LSTM: Gating Derivative
@@ -413,7 +548,11 @@ Where $\gamma$ (usually 0.9) is the momentum coefficient (friction).
 **Question:** Why is the F1 Score defined as the Harmonic Mean of Precision and Recall, rather than the Arithmetic Mean?
 
 **Answer:**
-$$  F1 = \frac{2}{\frac{1}{P} + \frac{1}{R}} = \frac{2PR}{P+R}  $$
+
+```math
+ F1 = \frac{2}{\frac{1}{P} + \frac{1}{R}} = \frac{2PR}{P+R}  
+```
+
 The Harmonic Mean is dominated by the **minimum** of the two numbers.
 
 * If Precision = 1.0 and Recall = 0.0 (e.g., predicting nothing):
