@@ -12,3 +12,6 @@ Note that the following Chapters are already available on ByteByteGo. I've taken
 - YouTube Video Search
 - Video Recommendation System
 - Personalized News Feed
+
+
+The other .md files are generated with Claude Opus 4.6 Extended. Credits to Salu for this!
