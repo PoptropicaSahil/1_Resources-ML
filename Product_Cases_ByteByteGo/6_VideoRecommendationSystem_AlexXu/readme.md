@@ -90,9 +90,9 @@ Figure 6.4: Content-based filtering
 
 Here is an explanation of the diagram.
 
-1. User A engaged with videos X\\mathrm{X}X and Y\\mathrm{Y}Y in the past
-2. Video Z\\mathrm{Z}Z is similar to video X\\mathrm{X}X and video Y\\mathrm{Y}Y
-3. The system recommends video Z\\mathrm{Z}Z to user A\\mathrm{A}A
+1. User A engaged with videos $\mathrm{X}$ and $\mathrm{Y}$ in the past
+2. Video $\mathrm{Z}$ is similar to video $\mathrm{X}$ and video $\mathrm{Y}$
+3. The system recommends video $\mathrm{Z}$ to user $\mathrm{A}$
 
 Content-based filtering has pros and cons.
 
@@ -114,11 +114,11 @@ CF uses user-user similarities (user-based CF) or video-video similarities (item
 
 Figure 6.5: User-based collaborative filtering
 
-Let's explain the diagram. The goal is to recommend a new video to user A.
+Let's explain the diagram. The goal is to recommend a new video to user $\mathrm{A}$.
 
-1. Find a similar user to A\\mathrm{A}A based on their previous interactions; say user B\\mathrm{B}B
-2. Find a video that user B engaged with but which user A has not seen yet; say video Z\\mathrm{Z}Z
-3. Recommend video Z\\mathrm{Z}Z to user A\\mathrm{A}A
+1. Find a similar user to $\mathrm{A}$ based on their previous interactions; say user $\mathrm{B}$
+2. Find a video that user $\mathrm{B}$ engaged with but which user $\mathrm{A}$ has not seen yet; say video $\mathrm{Z}$
+3. Recommend video $\mathrm{Z}$ to user $\mathrm{A}$
 
 A major difference between content-based filtering and CF filtering is that CF filtering does not use video features and relies exclusively upon users' historical interactions to make recommendations. Let's see the pros and cons of CF filtering.
 
@@ -364,29 +364,29 @@ Figure 6.13: The product of embeddings should approximate the feedback matrix
 
 To learn these embeddings, matrix factorization first randomly initializes two embedding matrices, then iteratively optimizes the embeddings to decrease the loss between the "Predicted scores matrix" and the "Feedback matrix". Loss function selection is an important consideration. Let's explore a few options:
 
-- Squared distance over observed ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs
+- Squared distance over observed $\langle \text{user}, \text{video} \rangle$ pairs
 - A weighted combination of squared distance over observed pairs and unobserved pairs
 
-**Squared distance over observed ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs**
+**Squared distance over observed $\langle \text{user}, \text{video} \rangle$ pairs**
 
 This loss function measures the sum of the squared distances over all pairs of observed (non-zero values) entries in the feedback matrix. This is shown in Figure 6.14.
 
 ![Image represents a diagram illustrating a loss function calculation in a machine learning context.  The diagram features two matrices: a 'Feedback matrix' on the left, containing several entries with the value '1' and some empty cells, and a 'Predicted scores' matrix on the right, populated with various floating-point numbers (e.g., 0.54, 0.9, -0.9, etc.).  Both matrices appear to be of the same dimension (3x4 in this example). Arrows emanate from the bottom of each matrix, converging at a loss function equation:  `loss = Σ_(i,j)∈obs (Aij - Ui . Vj)²`. This equation represents the sum of squared differences between corresponding elements of the two matrices, where `Aij` represents an element from the 'Feedback matrix', `Ui` and `Vj` are likely components of vectors used in the prediction process, and the summation is over the observed entries (`obs`).  The equation implies that the loss is calculated by comparing the predicted scores to the feedback values, with the goal of minimizing this loss during model training.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-14-1-EKC2TC2U.png&w=3840&q=75)
 
-Figure 6.14: Squared distance over observed ⟨ user, video ⟩ pairs
+Figure 6.14: Squared distance over observed $\langle \text{user}, \text{video} \rangle$ pairs
 
-AijA\_{i j}Aij​ refers to the entry with row iii and column jjj in the feedback matrix, UiU\_iUi​ is the embedding of user i,Vji, V\_ji,Vj​ is the embedding of video jjj, and the summation is over the observed pairs only.
+$A\_{i j}$ refers to the entry with row $i$ and column $j$ in the feedback matrix, $U\_i$ is the embedding of user $i$, $V\_j$ is the embedding of video $j$, and the summation is over the observed pairs only.
 
-Only summing over observed pairs leads to poor embeddings because the loss function doesn't penalize the model for bad predictions on unobserved pairs. For example, embedding matrices of all ones would have a zero loss on the training data. However, those embeddings may not work well for unseen ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs.
+Only summing over observed pairs leads to poor embeddings because the loss function doesn't penalize the model for bad predictions on unobserved pairs. For example, embedding matrices of all ones would have a zero loss on the training data. However, those embeddings may not work well for unseen $\langle \text{user}, \text{video} \rangle$ pairs.
 
-**Squared distance over both observed and unobserved ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs**
+**Squared distance over both observed and unobserved $\langle \text{user}, \text{video} \rangle$ pairs**
 This loss function treats unobserved pairs as negative data points and assigns a zero to them in the feedback matrix. As Figure 6.15 shows, the loss computes the sum of the squared distances over all entries in the feedback matrix.
 
 ![Image represents a diagram illustrating a loss function calculation in a machine learning context.  The diagram features two 3x4 matrices positioned side-by-side. The left matrix, labeled 'Feedback matrix,' contains binary values (0s and 1s) representing ground truth or target values. The right matrix, labeled 'Predicted scores,' contains floating-point numbers representing the model's predictions for the corresponding elements in the feedback matrix.  Arrows emanate from the bottom corners of both matrices, converging at a loss function formula:  `loss = ∑(i,j) (Aij – Ui . Vj)²`. This formula calculates the loss by summing the squared differences between the corresponding elements (Aij) of the feedback matrix and the element-wise product (Ui . Vj) of two latent vectors (U and V) derived from the predicted scores matrix.  The formula implies that the predicted scores matrix is factorized or decomposed into latent vectors U and V, and the loss measures the discrepancy between the model's predictions and the actual feedback.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-15-1-FGSZPWUQ.png&w=3840&q=75)
 
-Figure 6.15: Squared distance over all ⟨ user, video ⟩ pairs
+Figure 6.15: Squared distance over all $\langle \text{user}, \text{video} \rangle$ pairs
 
-This loss function addresses the previous issue by penalizing bad predictions for unobserved entries. However, this loss has a major drawback. The feedback matrix is usually sparse (lots of unobserved pairs), so unobserved pairs dominate observed pairs during training. This results in predictions that are mostly close to zero. This is not desirable and leads to poor generalization performance on unseen ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs.
+This loss function addresses the previous issue by penalizing bad predictions for unobserved entries. However, this loss has a major drawback. The feedback matrix is usually sparse (lots of unobserved pairs), so unobserved pairs dominate observed pairs during training. This results in predictions that are mostly close to zero. This is not desirable and leads to poor generalization performance on unseen $\langle \text{user}, \text{video} \rangle$ pairs.
 
 **A weighted combination of squared distance over observed and unobserved pairs**
 
@@ -396,7 +396,7 @@ To overcome the drawbacks of the loss functions described earlier, we opt for we
 
 Figure 6.16: Combined loss
 
-The first summation in the loss formula calculates the loss on the observed pairs, and the second summation calculates the loss on unobserved pairs. WWW is a hyperparameter that weighs the two summations. It ensures one does not dominate the other in the training phase. This loss function with a properly tuned WWW works well in practice \[5\]. We choose this loss function for the system.
+The first summation in the loss formula calculates the loss on the observed pairs, and the second summation calculates the loss on unobserved pairs. $W$ is a hyperparameter that weighs the two summations. It ensures one does not dominate the other in the training phase. This loss function with a properly tuned $W$ works well in practice \[5\]. We choose this loss function for the system.
 
 ##### Matrix factorization optimization
 
@@ -418,9 +418,9 @@ To predict the relevance between an arbitrary user and a candidate video, we cal
 
 ![Image represents a simplified illustration of a dot product calculation.  Two data sources are shown: 'User 2,' represented by a person icon, and 'Video 5,' represented by a video camera icon. Each source is associated with a two-element vector; User 2 has the vector [-0.7, 0.1], and Video 5 has the vector [-0.5, -0.3]. Arrows indicate that these vectors are inputs to a 'dot product' calculation. The calculation itself is explicitly shown as  `dot product = (-0.7) * (-0.5) + (0.1) * (-0.3) = 0.32`, demonstrating the element-wise multiplication and summation that defines the dot product. The result, 0.32, is implicitly the output of the dot product operation.  The diagram visually depicts the process of combining data from two different sources (user and video) using a vector dot product to obtain a single scalar value.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-17-1-RJMHWRCR.png&w=3840&q=75)
 
-Figure 6.17: Relevance score for ⟨ user 2, video 5 ⟩ pair
+Figure 6.17: Relevance score for $\langle \text{user 2}, \text{video 5} \rangle$ pair
 
-Figure 6.18 shows the predicted scores for all the ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs. The system returns recommended videos based on relevance scores.
+Figure 6.18 shows the predicted scores for all the $\langle \text{user}, \text{video} \rangle$ pairs. The system returns recommended videos based on relevance scores.
 
 ![Image represents a system demonstrating a recommendation system likely based on user preferences for videos.  At the top, five video sources are represented by video camera icons labeled 'Video 1' through 'Video 5'.  A 2x5 matrix to the right displays ratings for each video, with each cell containing a numerical value representing a score (e.g., 0.6, -1, etc.). Below this, a 3x2 matrix shows user preferences, where each row represents a user (User 1, User 2, User 3) and each column represents a preference score for two unspecified factors.  Finally, a 3x5 matrix displays the calculated results, likely representing a weighted preference score for each user and video combination, derived from the user preference matrix and the video rating matrix.  The values in this final matrix (e.g., 0.54, -0.46, etc.) are presumably calculated by combining the user preferences and video ratings, possibly through a dot product or similar operation.  The overall structure suggests a process of calculating personalized video recommendations based on user preferences and video ratings.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-18-1-6AOLMATI.png&w=3840&q=75)
 
@@ -456,7 +456,7 @@ Figure 6.19: Two-tower neural network
 
 ##### Constructing the dataset
 
-We construct the dataset by extracting features from different ⟨\\langle⟨ user, video ⟩\\rangle⟩ pairs and labeling them as positive or negative based on the user's feedback. For example, we label a pair as "positive" if the user explicitly liked the video, or watched at least half of it.
+We construct the dataset by extracting features from different $\langle \text{user}, \text{video} \rangle$ pairs and labeling them as positive or negative based on the user's feedback. For example, we label a pair as "positive" if the user explicitly liked the video, or watched at least half of it.
 
 To construct negative data points, we can either choose random videos which are not relevant or choose those the user explicitly disliked by pressing the dislike button. Figure 6.20 shows an example of the constructed data points.
 
@@ -476,9 +476,9 @@ Figure 6.21: Two-tower neural network training workflow
 
 ##### Two-tower neural network inference
 
-At inference time, the system uses the embeddings to find the most relevant videos for a given user. This is a classic "nearest neighbor" problem. We use approximate nearest neighbor methods to find the top k\\mathrm{k}k most similar video embeddings efficiently.
+At inference time, the system uses the embeddings to find the most relevant videos for a given user. This is a classic "nearest neighbor" problem. We use approximate nearest neighbor methods to find the top $\mathrm{k}$ most similar video embeddings efficiently.
 
-Two-tower neural networks are used for both content-based filtering and collaborative filtering. When a two-tower architecture is used for collaborative filtering, as shown in Figure 6.226.226.22, the video encoder is nothing but an embedding layer that converts the video ID into an embedding vector. This way, the model doesn't rely on other video features.
+`Two-tower neural networks are used for both content-based filtering and collaborative filtering`. When a two-tower architecture is used for collaborative filtering, as shown in Figure 6.226.226.22, the video encoder is nothing but an embedding layer that converts the video ID into an embedding vector. This way, the model doesn't rely on other video features.
 
 ![Image represents a system for recommending videos to users based on their features and video embeddings.  The system begins with 'User features', a horizontal array representing user data, which is fed into a 'User encoder'. This encoder processes the user features and generates a 'User embedding' (Eu), a vertical array representing a compressed, vectorized representation of the user.  Separately, a 'Video ID' is input into an 'Embedding layer', which generates a 'Video embedding' (Ev), another vertical array representing the video's features.  The 'User embedding' (Eu) and 'Video embedding' (Ev) are then compared using a 'Similarity (Eu, Ev)' function, which calculates a similarity score between the user and video representations.  The arrows indicate the flow of information, showing how the user and video features are processed to generate embeddings, which are then compared to determine video recommendations.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-22-1-NGISNDD5.png&w=3840&q=75)
 
@@ -517,7 +517,7 @@ The system’s performance can be evaluated with offline and online metrics.
 
 We evaluate the following offline metrics commonly used in recommendation systems.
 
-**Precision@k.** This metric measures the proportion of relevant videos among the top k\\mathrm{k}k recommended videos. Multiple k\\mathrm{k}k values (e.g., 1,5,101,5,101,5,10 ) can be used.
+**Precision@k.** This metric measures the proportion of relevant videos among the top $\mathrm{k}$ recommended videos. Multiple $k$ values (e.g., 1,5,10) can be used.
 
 **mAP.** This metric measures the ranking quality of recommended videos. It is a good fit because the relevance scores are binary in our system.
 
@@ -536,7 +536,9 @@ In practice, companies track many metrics during online evaluation. Let's examin
 
 **CTR.** The ratio between clicked videos and the total number of recommended videos. The formula is:
 
-CTR= number of clicked videos  total number of recommended videos C T R=\\frac{\\text { number of clicked videos }}{\\text { total number of recommended videos }}CTR= total number of recommended videos  number of clicked videos ​
+```math
+CTR=\frac{\text { number of clicked videos }}{\text { total number of recommended videos }}
+```
 
 CTR is an insightful metric to track user engagement, but the drawback of CTR is that we cannot capture or measure clickbait videos.
 
@@ -566,7 +568,7 @@ Let's take a closer look at the components of the prediction pipeline.
 
 The goal of candidate generation is to narrow down the videos from potentially billions, to thousands. We prioritize efficiency over accuracy at this stage and are not concerned about false positives.
 
-To keep candidate generation fast, we choose a model which doesn't rely on video features. In addition, this model should be able to handle new users. A two-tower neural network is a good fit for this stage.
+To keep `candidate generation` fast, we choose a model which doesn't rely on video features. In addition, this model should be able to handle new users.` A two-tower neural network is a good fit for this stage.`
 
 Figure 6.246.246.24 shows the candidate generation workflow. The candidate generation obtains a user's embedding from the user encoder. Once the computation is complete, it retrieves the most similar videos from the approximate nearest neighbor service. These videos are ranked based on similarity in the embedding space and are returned as the output.
 
@@ -576,7 +578,7 @@ Figure 6.24: Candidate generation workflow
 
 In practice, companies may choose to use more than one candidate generation because it could improve the performance of the recommendation. Let's take a look at why.
 
-Users may be interested in videos for many reasons. For example, a user may choose to watch a video because it's popular, trending, or relevant to their location. To include those videos in the recommendations, it is common to use more than one candidate generation, as shown in Figure 6.25.
+`Users may be interested in videos for many reasons. For example, a user may choose to watch a video because it's popular, trending, or relevant to their location. To include those videos in the recommendations, it is common to use more than one candidate generation`, as shown in Figure 6.25.
 
 ![Image represents a video recommendation system architecture.  A query user initiates the process, their query undergoing 'Feature preparation' before being fed into a 'User encoder'. The encoder's output is then used by multiple 'Candidate generation' modules (1, 2, ..., k), each potentially employing different strategies.  These modules receive input from a massive database of 'Billions of videos'.  Each candidate generation module outputs a set of video recommendations (labeled 'Relevant videos', 'Popular videos', and 'Trending videos').  All candidate video recommendations are then processed by an 'Approximate nearest neighbor service', which uses an 'Indexed video embeddings' database to refine the recommendations based on similarity to the user's encoded features.  The final output is a set of recommended videos presented to the user.  The system uses a pipeline architecture, with data flowing sequentially from the user query through feature preparation, encoding, candidate generation, nearest neighbor search, and finally to the recommended videos.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-25-1-VUF4YK3U.png&w=3840&q=75)
 
@@ -588,7 +590,7 @@ As soon as we have narrowed down potential videos from billions to thousands, we
 
 Also known as ranking, scoring takes the user and candidate videos as input, scores each video, and outputs a ranked list of videos.
 
-At this stage, we prioritize accuracy over efficiency. To do so, we choose content-based filtering filtering and pick a model which relies on video features. A two-tower neural network is a common choice for this stage. Since there are only a handful of videos to rank in the scoring stage, we can employ a heavier model with more parameters. Figure 6.26 shows an overview of the scoring component.
+At this stage, we prioritize accuracy over efficiency. To do so, we `choose content-based filtering` and pick a model which relies on video features. `A two-tower neural network is a common choice for this stage`. Since there are only a handful of videos to rank in the scoring stage, we can employ a heavier model with more parameters. Figure 6.26 shows an overview of the scoring component.
 
 ![Image represents a video recommendation system architecture.  A query user initiates the process.  Their query is fed into a 'Scoring' module, which receives input from two sources:  thousands of candidate videos (represented by multiple video icons within a dashed box) and a 'Feature preparation' module. The 'Feature preparation' module processes data from a 'Video feature store' (a database icon), preparing video features for the scoring process. The 'Scoring' module utilizes a 'Two-tower neural network model' (cloud shape) to compute a relevance score between the user query and each candidate video.  The highest-scoring videos (dozens, represented by multiple video icons within a dashed box) are then outputted as recommendations to the user.  Arrows indicate the flow of data between components.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvideo-recommendation-system%2Fch6-26-1-KDRP2HHB.png&w=3840&q=75)
 

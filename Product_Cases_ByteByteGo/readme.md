@@ -1,10 +1,9 @@
-# Product Cases Prep using Perplexity!
+# Product Cases Prep!
 
 > SEE ALSO: junfanz1 Awesome-AI-Engineer-Review main System Design -- `ML System Design Interview.md`
+> SEE ALSO: alirezadir's ML System Design  [notes](https://github.com/alirezadir/Machine-Learning-Interviews/tree/main/src/MLSD)
 
-I used Perplexity's brilliant *Labs* mode for the cases. Markdown conversions aren't perfect yet. Will refine them with time. Topics for the studies are taken from ByteByteGo's ML System Design Course
-
-> Ideally should have purchased the book but all good
+> Ideally should have purchased Alex Xu's book but all good
 
 Note that the following Chapters are already available on ByteByteGo. I've taken them as-is
 
@@ -13,5 +12,4 @@ Note that the following Chapters are already available on ByteByteGo. I've taken
 - Video Recommendation System
 - Personalized News Feed
 
-
-The other .md files are generated with Claude Opus 4.6 Extended. Credits to Salu for this!
+The other .md files are generated with Claude Opus 4.6 Extended. Have also included Alreza's notes for these. Credits to Salu for access to Claude!

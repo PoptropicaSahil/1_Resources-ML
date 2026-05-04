@@ -323,17 +323,23 @@ Here are some offline metrics that are typically used in search systems. Let's e
 
 **Precision@k and mAP**
 
-precision@k = number of relevant items among the top k items in the ranked list k\\text { precision@k }=\\frac{\\text { number of relevant items among the top } k \\text { items in the ranked list }}{k} precision@k =k number of relevant items among the top k items in the ranked list ​
+```math
+\text{ precision@k }=\frac{\text { number of relevant items among the top } k}{\text { items in the ranked list }}
+```
 
 In the evaluation dataset, a given text query is associated with only one video. That means the numerator of the precision@k formula is at most 1. This leads to low precison@k values. For example, for a given text query, even if we rank its associated video at the top of the list, the precision@10 is only 0.1. Due to this limitation, precision metrics, such as precision@k and mAP, are not very helpful.
 
 **Recall@k.** This measures the ratio between the number of relevant videos in the search results and the total number of relevant videos.
 
-recall@k = Number of relevant videos among the top k videos  Total number of relevant videos \\text { recall@k }=\\frac{\\text { Number of relevant videos among the top } k \\text { videos }}{\\text { Total number of relevant videos }} recall@k = Total number of relevant videos  Number of relevant videos among the top k videos ​
+```math
+\text { recall@k }= \frac{\text { number of relevant items among the top } k}{\text { total number of relevant items }}
+```
 
 As described earlier, the "total number of relevant videos" is always 1 . With that, we can translate the recall@k formula to the following:
 
-recall@ k=1\\mathrm{k}=1k=1 if the relevant video is among the top kkk videos, 0 otherwise
+```math
+\text { recall@k }= \begin{cases}1 & \text { if the relevant video is among the top } k \\ 0 & \text { otherwise }\end{cases}
+```
 
 What are the pros and cons of this metric?
 
@@ -343,12 +349,14 @@ What are the pros and cons of this metric?
 
 **Cons**
 
-- It depends on kkk. Choosing the right k\\mathrm{k}k could be challenging.
-- When the relevant video is not among the k\\mathrm{k}k videos in the output list, recall@k is always 0. For example, consider the case where model A ranks a relevant video at place 15, and model B ranks the same video at place 50. If we use recall@10 to measure the quality of these two models, both would have recall@10=0, even though model A is better than model B.
+- It depends on $k$. Choosing the right $\mathrm{k}$ could be challenging.
+- When the relevant video is not among the $k$ videos in the output list, recall@k is always 0. For example, consider the case where model A ranks a relevant video at place 15, and model B ranks the same video at place 50. If we use recall@10 to measure the quality of these two models, both would have recall@10=0, even though model A is better than model B.
 
 **Mean Reciprocal Rank (MRR).** This metric measures the quality of the model by averaging the rank of the first relevant item in each search result. The formula is:
 
-MRR=1m∑i=1m1rank⁡iM R R=\\frac{1}{m} \\sum\_{i=1}^m \\frac{1}{\\operatorname{rank}\_i}MRR=m1​i=1∑m​ranki​1​
+```math
+MRR = \frac{1}{m} \sum_{i=1}^m \frac{1}{\operatorname{rank}_i}
+```
 
 This metric addresses the shortcomings of recall@k and can be used as our offline metric.
 
