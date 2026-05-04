@@ -1,6 +1,6 @@
 # Design an Event Recommender System
 
-**ML System Design Interview — Senior Data Scientist (L5/L6)**
+**ML System Design Interview - Senior Data Scientist (L5/L6)**
 45–60 min • Full math & intuition • Multi-stage funnel architecture
 
 `I` = Interviewer | `C` = Candidate (10 YoE)
@@ -21,13 +21,13 @@
 
 ---
 
-## Phase 01 — Requirements Clarification (5–8 min)
+## Phase 01 - Requirements Clarification (5–8 min)
 
 **`I`:** Let's say you're at a company like Eventbrite or Meetup. You need to design an ML system that recommends events to users. Walk me through how you'd approach this.
 
 **`C`:** Before diving in, I'd like to clarify a few things to scope the problem properly.
 
-- **Product surface:** Are we recommending events on a homepage feed, in email digests, or as search results? I'll assume a **homepage personalized feed** — the highest-traffic surface.
+- **Product surface:** Are we recommending events on a homepage feed, in email digests, or as search results? I'll assume a **homepage personalized feed** - the highest-traffic surface.
 - **Event types:** Are these in-person events (concerts, meetups, conferences), virtual, or both? I'll assume **primarily in-person with some virtual**.
 - **Scale:** What order of magnitude are we talking?
 
@@ -35,7 +35,7 @@
 
 **`C`:** Great. Let me also clarify a few domain-specific constraints that make events fundamentally different from, say, movie or product recommendations:
 
-**1. Temporal perishability:** Events expire. A concert on March 5th is useless on March 6th. Our system must handle inventory that's constantly churning — roughly 10-20K new events/day, 10-20K expiring.
+**1. Temporal perishability:** Events expire. A concert on March 5th is useless on March 6th. Our system must handle inventory that's constantly churning - roughly 10-20K new events/day, 10-20K expiring.
 
 **2. Geographic constraint:** Unlike Netflix or Spotify, physical proximity is a hard filter. A user in San Francisco won't attend a meetup in Tokyo (usually).
 
@@ -56,38 +56,40 @@
 - We need to generate ~50 recommendations per page load
 - We serve ~1000 requests/sec at peak
 
-> 🧠 **Mental Model — Events vs. Static Items**
+> 🧠 **Mental Model - Events vs. Static Items**
 >
-> The key distinction for event recommendation vs. general RecSys is the **item lifecycle**. In product recommendations, item embeddings can be precomputed and cached for weeks. In event recommendation, the item corpus is a *sliding window* — you're constantly indexing new items and expiring old ones. This fundamentally affects your ANN index refresh strategy and cold-start approach.
+> The key distinction for event recommendation vs. general RecSys is the **item lifecycle**. In product recommendations, item embeddings can be precomputed and cached for weeks. In event recommendation, the item corpus is a *sliding window* - you're constantly indexing new items and expiring old ones. This fundamentally affects your ANN index refresh strategy and cold-start approach.
 
 ---
 
-## Phase 02 — Metrics Definition (5 min)
+## Phase 02 - Metrics Definition (5 min)
 
 **`I`:** How would you measure success for this system?
 
 **`C`:** I'd structure metrics at three levels: business, online, and offline.
 
-**Business Metrics** — what the CEO cares about:
+**Business Metrics** - what the CEO cares about:
+
 - *Ticket revenue / RSVP volume* per user per month
-- *Event discovery rate* — % of events getting ≥N RSVPs from recommendations (supply-side health)
-- *User retention* — DAU/MAU ratio
+- *Event discovery rate* - % of events getting ≥N RSVPs from recommendations (supply-side health)
+- *User retention* - DAU/MAU ratio
 
-**Online Metrics** — what we A/B test on:
+**Online Metrics** - what we A/B test on:
+
 - *Click-through rate (CTR)* on recommended events
-- *RSVP rate* — stronger signal than clicks
-- *Conversion rate* — click → RSVP → actual attendance
-- *Recommendation diversity* — entropy across event categories in top-10
+- *RSVP rate* - stronger signal than clicks
+- *Conversion rate* - click → RSVP → actual attendance
+- *Recommendation diversity* - entropy across event categories in top-10
 
-**Offline Metrics** — for model iteration:
+**Offline Metrics** - for model iteration:
 
 | Metric | Formula / Intuition | Used For |
 |--------|---------------------|----------|
 | Recall@K | Of all relevant events, what fraction did we retrieve in top K? | Retrieval stage |
 | NDCG@K | Are the most relevant events ranked highest? Penalizes relevant items ranked low. | Ranking stage |
-| MAP@K | Average precision across all users — rewards correct ordering | End-to-end |
+| MAP@K | Average precision across all users - rewards correct ordering | End-to-end |
 | AUC-ROC | Probability that a positive (RSVP'd) event is scored higher than a negative | Pointwise ranker |
-| Log Loss | −[y·log(p) + (1−y)·log(1−p)] — calibration of probability estimates | CTR prediction model |
+| Log Loss | −[y·log(p) + (1−y)·log(1−p)] - calibration of probability estimates | CTR prediction model |
 
 **`C`:** One critical nuance: **CTR alone is a trap** for events. A clickbait-y event title gets clicks but not RSVPs. So I'd use a **composite objective**:
 
@@ -97,7 +99,7 @@ score(user, event) = w₁·P(click) + w₂·P(RSVP|click) + w₃·P(attend|RSVP)
 
 Where w₁ < w₂ < w₃ to weight deeper funnel actions more heavily. Concretely, in practice I might use w₁=0.1, w₂=0.3, w₃=0.6. We'd tune these weights via online A/B tests watching the business metrics.
 
-> 🧠 **Mental Model — Metric Hierarchy**
+> 🧠 **Mental Model - Metric Hierarchy**
 >
 > Think of metrics as a pyramid: *offline metrics* give fast iteration signal (minutes), *online metrics* validate via A/B tests (days), and *business metrics* confirm long-term impact (weeks). If your offline metrics improve but online metrics don't, your offline evaluation setup is broken (e.g., data leakage, selection bias). If online metrics improve but business metrics don't, your proxy objective is misaligned with true user value.
 
@@ -110,15 +112,15 @@ IPS-weighted reward = Σᵢ (rᵢ / P(examine position i))
 where P(examine position i) is estimated from position-click curves in logs
 ```
 
-We can estimate examination probabilities by running a randomization experiment — swap items at positions i and j and measure click differences. The ratio gives you the position bias curve.
+We can estimate examination probabilities by running a randomization experiment - swap items at positions i and j and measure click differences. The ratio gives you the position bias curve.
 
 ---
 
-## Phase 03 — High-Level Architecture (8 min)
+## Phase 03 - High-Level Architecture (8 min)
 
 **`I`:** Walk me through the system architecture end to end.
 
-**`C`:** I'll use the standard **multi-stage funnel** pattern — the same approach Instagram Explore, YouTube, and Pinterest use. The key insight is that each stage trades off between recall and precision, with computational cost increasing as the funnel narrows.
+**`C`:** I'll use the standard **multi-stage funnel** pattern - the same approach Instagram Explore, YouTube, and Pinterest use. The key insight is that each stage trades off between recall and precision, with computational cost increasing as the funnel narrows.
 
 ### Multi-Stage Recommendation Funnel
 
@@ -183,12 +185,12 @@ Scoring all 500K events with the heavy ranking model would take ~500K × 0.5ms =
 | Pre-Ranking | ~15ms | 500 → 100 | ~0.03ms/item |
 | Ranking (Deep Model) | ~50ms | 100 → 50 | ~0.5ms/item |
 | Re-Ranking | ~10ms | 50 → 50 | Rule-based |
-| Network/Orchestration | ~30ms | — | — |
-| **TOTAL** | **~130ms p50** | — | **< 200ms p99** |
+| Network/Orchestration | ~30ms | - | - |
+| **TOTAL** | **~130ms p50** | - | **< 200ms p99** |
 
-> ⚖️ **Tradeoff — Pre-Ranking: Is It Worth It?**
+> ⚖️ **Tradeoff - Pre-Ranking: Is It Worth It?**
 >
-> Pre-ranking adds latency and complexity. You can skip it if your retrieval is precise enough (say, returns ~100 candidates). But at our scale (500 candidates from retrieval), scoring 500 items with a heavy DCN model at 0.5ms/item = 250ms — that blows our budget. The pre-ranker acts as *knowledge distillation at serving time*: it's a lightweight student model trained to approximate the full ranker's output, cutting 5x candidates at 10x speed.
+> Pre-ranking adds latency and complexity. You can skip it if your retrieval is precise enough (say, returns ~100 candidates). But at our scale (500 candidates from retrieval), scoring 500 items with a heavy DCN model at 0.5ms/item = 250ms - that blows our budget. The pre-ranker acts as *knowledge distillation at serving time*: it's a lightweight student model trained to approximate the full ranker's output, cutting 5x candidates at 10x speed.
 
 ### Offline/Online System Split
 
@@ -218,11 +220,11 @@ Scoring all 500K events with the heavy ranking model would take ~500K × 0.5ms =
 └──────────────────────────────────────┘    └───────────────────────────────────┘
 ```
 
-**`C`:** One important detail for events specifically: the ANN index needs to be **refreshed frequently** — at least hourly — because events are constantly being created and expiring. Compare this to a product catalog where you might rebuild the index daily. I'd use an **incremental ANN index** (like Milvus or Vespa) that supports real-time inserts and deletes, rather than a batch-rebuilt FAISS index.
+**`C`:** One important detail for events specifically: the ANN index needs to be **refreshed frequently** - at least hourly - because events are constantly being created and expiring. Compare this to a product catalog where you might rebuild the index daily. I'd use an **incremental ANN index** (like Milvus or Vespa) that supports real-time inserts and deletes, rather than a batch-rebuilt FAISS index.
 
 ---
 
-## Phase 04 — Feature Engineering (8–10 min)
+## Phase 04 - Feature Engineering (8–10 min)
 
 **`I`:** What features would you use, and how do you handle the cold-start problem?
 
@@ -230,21 +232,21 @@ Scoring all 500K events with the heavy ranking model would take ~500K × 0.5ms =
 
 | Category | Features | Update Freq | Storage |
 |----------|----------|-------------|---------|
-| User — Static | age_bucket, gender, city, account_age, preferred_categories (from profile) | Daily | Feature Store |
-| User — Behavioral | past_RSVPs_by_category (sparse vector), avg_event_price, avg_distance_traveled, time_of_day_preference, recency_weighted_interaction_embedding | Hourly | Feature Store |
-| User — Real-time | current_location, current_session_clicks, time_since_last_visit | Per-request | Computed online |
-| Event — Content | title_embedding (BERT), category, sub_category, price_bucket, is_free, is_virtual, duration_hours, venue_embedding | At creation | Feature Store |
-| Event — Popularity | total_RSVPs, RSVP_velocity (RSVPs/hour in last 24h), page_views, organizer_avg_rating, seats_remaining_pct | Every 15min | Feature Store |
-| Context — Temporal | day_of_week, hour_of_day, is_weekend, days_until_event, is_holiday_week | Per-request | Computed online |
-| Cross — User×Event | user_organizer_affinity, user_category_affinity, user_venue_distance_km, user_price_preference_match, social_signal (friends attending) | Per-request (ranking only) | Computed online |
+| User - Static | age_bucket, gender, city, account_age, preferred_categories (from profile) | Daily | Feature Store |
+| User - Behavioral | past_RSVPs_by_category (sparse vector), avg_event_price, avg_distance_traveled, time_of_day_preference, recency_weighted_interaction_embedding | Hourly | Feature Store |
+| User - Real-time | current_location, current_session_clicks, time_since_last_visit | Per-request | Computed online |
+| Event - Content | title_embedding (BERT), category, sub_category, price_bucket, is_free, is_virtual, duration_hours, venue_embedding | At creation | Feature Store |
+| Event - Popularity | total_RSVPs, RSVP_velocity (RSVPs/hour in last 24h), page_views, organizer_avg_rating, seats_remaining_pct | Every 15min | Feature Store |
+| Context - Temporal | day_of_week, hour_of_day, is_weekend, days_until_event, is_holiday_week | Per-request | Computed online |
+| Cross - User×Event | user_organizer_affinity, user_category_affinity, user_venue_distance_km, user_price_preference_match, social_signal (friends attending) | Per-request (ranking only) | Computed online |
 
 **`I`:** How do you generate the text embeddings for event titles and descriptions?
 
 **`C`:** For the **retrieval stage**, I'd use a distilled sentence transformer (e.g., all-MiniLM-L6-v2 or E5-small) to generate 384-dimensional embeddings. These are precomputed offline when an event is created.
 
-For the **ranking stage**, I don't pass raw BERT embeddings. Instead, I'd extract a few semantic features: the top-3 predicted categories from a text classifier, sentiment score, and keyword features. The ranking model learns its own feature interactions — giving it raw 384-dim embeddings would be wasteful.
+For the **ranking stage**, I don't pass raw BERT embeddings. Instead, I'd extract a few semantic features: the top-3 predicted categories from a text classifier, sentiment score, and keyword features. The ranking model learns its own feature interactions - giving it raw 384-dim embeddings would be wasteful.
 
-Now, for **cold-start** — this is the core challenge for events:
+Now, for **cold-start** - this is the core challenge for events:
 
 ### Cold-Start Strategy by User/Event Matrix
 
@@ -267,11 +269,11 @@ Now, for **cold-start** — this is the core challenge for events:
                     └──────────────────┴──────────────────────┘
 ```
 
-**`C`:** The two-tower model is particularly good for cold-start because the event tower can produce an embedding from **content features alone** — title, category, price, venue location — without needing any interaction history. The moment an event is created, it gets an embedding and enters the ANN index. This is a major advantage over pure collaborative filtering approaches like matrix factorization, where a new item with zero interactions has no representation.
+**`C`:** The two-tower model is particularly good for cold-start because the event tower can produce an embedding from **content features alone** - title, category, price, venue location - without needing any interaction history. The moment an event is created, it gets an embedding and enters the ANN index. This is a major advantage over pure collaborative filtering approaches like matrix factorization, where a new item with zero interactions has no representation.
 
 For **new users**, I'd use a two-phase approach: (1) show popular/trending events in their geo for the first session, (2) after they interact with 3-5 events, switch to the personalized model. We can also use an **onboarding preference quiz** (like Spotify Wrapped categories) to bootstrap the user embedding.
 
-> 🧠 **Mental Model — Feature Serving Tiers**
+> 🧠 **Mental Model - Feature Serving Tiers**
 >
 > Think of features in three serving tiers by latency cost:
 >
@@ -281,11 +283,11 @@ For **new users**, I'd use a two-phase approach: (1) show popular/trending event
 >
 > **Tier 3 (computed at request time, <10ms):** Cross-features like distance, social overlap. These can only exist in the ranking stage where you have both user and event context.
 >
-> The two-tower retrieval model can *only* use Tier 1 features (because user and event towers must be independent for caching). The ranking model uses all three tiers — that's why it's more powerful.
+> The two-tower retrieval model can *only* use Tier 1 features (because user and event towers must be independent for caching). The ranking model uses all three tiers - that's why it's more powerful.
 
 ---
 
-## Phase 05 — Model Design & Training (12–15 min)
+## Phase 05 - Model Design & Training (12–15 min)
 
 **`I`:** Let's go deep on the model architecture. Walk me through retrieval and ranking mathematically.
 
@@ -334,7 +336,7 @@ For **new users**, I'd use a two-phase approach: (1) show popular/trending event
 L(uᵢ) = −log( exp(uᵢᵀeᵢ / τ) / Σⱼ₌₁ᴺ exp(uᵢᵀeⱼ / τ) )
 ```
 
-Where τ (temperature) is typically 0.05–0.1. The denominator sums over all events in the batch — the other N−1 events serve as **implicit negatives**.
+Where τ (temperature) is typically 0.05–0.1. The denominator sums over all events in the batch - the other N−1 events serve as **implicit negatives**.
 
 **Key issue: popularity bias correction.** In-batch negatives are sampled proportional to their frequency in training data, so popular events appear disproportionately as negatives. This causes the model to under-recommend popular items (the logQ correction from the YouTube paper):
 
@@ -345,7 +347,7 @@ where pⱼ = frequency of event j in training data / total events
 
 Without this correction, the model learns to penalize popular events because they appear as negatives too often. The YouTube DNN paper showed this can drop Recall@K by 5-10%.
 
-### Stage 3: Ranking Model — Deep Cross Network v2 (DCN-v2) with Multi-Task
+### Stage 3: Ranking Model - Deep Cross Network v2 (DCN-v2) with Multi-Task
 
 **`C`:** The ranking model is fundamentally different from retrieval: it sees user-event *pairs* and can compute cross-features. I'd use a DCN-v2 architecture with multi-task heads.
 
@@ -395,7 +397,7 @@ The cross network explicitly models feature interactions like "user_preferred_pr
 xₗ₊₁ = x₀ ⊙ (Wₗ · xₗ + bₗ) + xₗ
 ```
 
-Where ⊙ is element-wise multiplication. This is bounded-degree polynomial feature interaction — layer l captures up to (l+1)-order interactions. With 3 cross layers, we get up to 4th-order interactions at linear cost. Compare this to a pure DNN which approximates these interactions less efficiently.
+Where ⊙ is element-wise multiplication. This is bounded-degree polynomial feature interaction - layer l captures up to (l+1)-order interactions. With 3 cross layers, we get up to 4th-order interactions at linear cost. Compare this to a pure DNN which approximates these interactions less efficiently.
 
 **Multi-Task Training Loss:**
 
@@ -424,11 +426,13 @@ final_score = w₁·P(click) + w₂·P(RSVP|click)·P(click) + w₃·P(attend|RS
 **`C`:**
 
 **For retrieval (two-tower):**
+
 - *Positives:* (user, event) pairs where user RSVP'd or purchased a ticket
 - *Negatives:* In-batch negatives (all other events in the batch) + hard negatives sampled from events the user saw but didn't click
 
 **For ranking (DCN-v2):**
-- Training data comes from *logged impressions* — events that were actually shown to users
+
+- Training data comes from *logged impressions* - events that were actually shown to users
 - Label is click=1/0, RSVP=1/0, attend=1/0
 - Critical: only train on events the user actually *saw*, not all events. This avoids **selection bias**.
 
@@ -438,7 +442,7 @@ final_score = w₁·P(click) + w₂·P(RSVP|click)·P(click) + w₃·P(attend|RS
 2. Events retrieved by the model but not clicked (semi-hard)
 3. Events in same category/geo but not interacted with (hard)
 
-> ⚖️ **Tradeoff — DCN-v2 vs. DeepFM vs. Transformer**
+> ⚖️ **Tradeoff - DCN-v2 vs. DeepFM vs. Transformer**
 >
 > **DCN-v2:** Explicit bounded-degree feature crosses. Efficient, interpretable crosses. Best when feature interactions are important but you want controlled complexity. This is my pick.
 >
@@ -473,11 +477,11 @@ L = Σₜ (1/2σₜ²) · Lₜ + log(σₜ)
 where σₜ is a learned per-task uncertainty parameter
 ```
 
-This automatically balances the loss across tasks — the attend task (high uncertainty) gets a smaller effective weight initially, preventing it from destabilizing training.
+This automatically balances the loss across tasks - the attend task (high uncertainty) gets a smaller effective weight initially, preventing it from destabilizing training.
 
 ---
 
-## Phase 06 — Serving & Infrastructure (5–8 min)
+## Phase 06 - Serving & Infrastructure (5–8 min)
 
 **`I`:** How do you serve this in production at 1000 QPS?
 
@@ -539,10 +543,11 @@ User Request (user_id, lat/lng, timestamp)
 **Model Serving:** Ranking model on TensorFlow Serving with batching enabled (batch size 32, max wait 5ms). This amortizes GPU compute. Pre-ranker on CPU (it's lightweight enough).
 
 **Caching:** Two-layer cache:
-- L1: User-level result cache (TTL=5min) — if the same user refreshes within 5 min, serve cached results
-- L2: User embedding cache (TTL=1hr) — avoid recomputing the user tower for every request
 
-**`I`:** What about the ANN index — how do you handle the fact that events expire?
+- L1: User-level result cache (TTL=5min) - if the same user refreshes within 5 min, serve cached results
+- L2: User embedding cache (TTL=1hr) - avoid recomputing the user tower for every request
+
+**`I`:** What about the ANN index - how do you handle the fact that events expire?
 
 **`C`:** This is the trickiest infra challenge specific to events. Two approaches:
 
@@ -552,7 +557,7 @@ User Request (user_id, lat/lng, timestamp)
 
 I'd go with **Option A** for simplicity. With 20K geo-filtered candidates (after the geo pre-filter step), even with metadata filtering, the ANN search completes in <5ms.
 
-> 🧠 **Mental Model — ANN Index Refresh Strategy**
+> 🧠 **Mental Model - ANN Index Refresh Strategy**
 >
 > Think of ANN indexes on a spectrum:
 >
@@ -562,27 +567,30 @@ I'd go with **Option A** for simplicity. With 20K geo-filtered candidates (after
 >
 > **Streaming (Vespa, custom):** Events indexed within seconds of creation. Maximum freshness at maximum complexity.
 >
-> For events, you need at least "Incremental." The refresh cadence should match your business SLA — if an organizer expects their event to appear in recommendations within 1 hour, your pipeline must index it within 1 hour.
+> For events, you need at least "Incremental." The refresh cadence should match your business SLA - if an organizer expects their event to appear in recommendations within 1 hour, your pipeline must index it within 1 hour.
 
 ---
 
-## Phase 07 — Monitoring, Iteration & Edge Cases (5 min)
+## Phase 07 - Monitoring, Iteration & Edge Cases (5 min)
 
 **`I`:** How do you monitor this system and iterate on it?
 
 **`C`:**
 
 **Online Monitoring:**
+
 - *Real-time dashboards:* CTR, RSVP rate, p50/p99 latency per stage, ANN index freshness lag
 - *Alerting on:* Latency spikes (>300ms p99), CTR drops >10% from baseline, model serving errors, feature store stale data
 - *Data quality monitors:* Feature distribution drift (KL-divergence between training and serving distributions), null rate monitoring
 
 **Model Monitoring:**
+
 - *Prediction calibration:* Is P(RSVP)=0.05 actually resulting in 5% RSVP rate? Plot calibration curves daily.
 - *Feature importance drift:* If the model suddenly relies heavily on a single feature, investigate data issues.
 - *A/B testing framework:* I'd use a holdout-based system where 5% of traffic sees the existing model and 5% sees the new model, testing on RSVP rate as the primary metric with 95% confidence.
 
 **Retraining Cadence:**
+
 - Retrieval model: retrain weekly (embeddings are relatively stable)
 - Ranking model: retrain daily with the last 30 days of data (it needs fresh behavioral signals)
 - Use **warm-starting**: initialize from last checkpoint and fine-tune on new data, rather than training from scratch
@@ -591,25 +599,25 @@ I'd go with **Option A** for simplicity. With 20K geo-filtered candidates (after
 
 **`C`:**
 
-**1. Filter bubble:** User only attends tech meetups → system only recommends tech meetups → user never discovers cooking classes they'd love. Solution: inject an **exploration component** in re-ranking — 10-15% of slots filled with "contextually adjacent" categories (e.g., if tech → design meetups, entrepreneurship events).
+**1. Filter bubble:** User only attends tech meetups → system only recommends tech meetups → user never discovers cooking classes they'd love. Solution: inject an **exploration component** in re-ranking - 10-15% of slots filled with "contextually adjacent" categories (e.g., if tech → design meetups, entrepreneurship events).
 
 **2. Popularity bias amplification:** Popular events get more clicks → more training signal → ranked higher → more clicks. Solution: add a **popularity penalty** in re-ranking: `score_final = score_model × (1 / log(1 + total_RSVPs)^β)`, where β controls the penalty strength.
 
 **3. Temporal exploitation:** Events happening tomorrow get urgency clicks, not genuine interest. Solution: include "days_until_event" as a feature and be careful not to overweight imminent events.
 
-**4. Organizer fairness:** New organizers with no history get buried. Solution: organizer-level exposure guarantees — ensure every organizer gets a minimum number of impressions proportional to their event count (a form of multi-sided fairness).
+**4. Organizer fairness:** New organizers with no history get buried. Solution: organizer-level exposure guarantees - ensure every organizer gets a minimum number of impressions proportional to their event count (a form of multi-sided fairness).
 
 **5. Social signal leakage:** "3 friends attending" is a powerful feature but creates a rich-get-richer dynamic for socially connected events. We should A/B test the marginal value of the social signal vs. its concentration effects.
 
-> 🧠 **Mental Model — The Exploration-Exploitation Dial**
+> 🧠 **Mental Model - The Exploration-Exploitation Dial**
 >
-> Every recommender system sits on a spectrum between *exploitation* (showing what you know the user likes) and *exploration* (showing novel items to learn more). For events, exploration is *more important* than for products because: (a) events are ephemeral — if you don't explore now, the event expires, and (b) user preferences for events are less stable than for products (someone might want jazz one week and hiking the next). A good rule of thumb: 15-20% exploration for events vs. 5-10% for products.
+> Every recommender system sits on a spectrum between *exploitation* (showing what you know the user likes) and *exploration* (showing novel items to learn more). For events, exploration is *more important* than for products because: (a) events are ephemeral - if you don't explore now, the event expires, and (b) user preferences for events are less stable than for products (someone might want jazz one week and hiking the next). A good rule of thumb: 15-20% exploration for events vs. 5-10% for products.
 
 ---
 
 ## Summary & Key Takeaways
 
-### Complete System — One-Slide Summary
+### Complete System - One-Slide Summary
 
 ```
 ┌─────────────────── OFFLINE ──────────────────┐

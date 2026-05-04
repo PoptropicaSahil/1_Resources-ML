@@ -6,26 +6,26 @@
 
 ## Phase 1: Problem Formulation & Requirement Clarification (~8 min)
 
-**Interviewer:** Let's say you're working at a vacation rental platform — think Airbnb or Vrbo. When a user is viewing a specific listing, we want to show a "Similar Listings" carousel below the listing details. Design the ML system that powers this feature. Take a moment to think about it, and start wherever you'd like.
+**Interviewer:** Let's say you're working at a vacation rental platform - think Airbnb or Vrbo. When a user is viewing a specific listing, we want to show a "Similar Listings" carousel below the listing details. Design the ML system that powers this feature. Take a moment to think about it, and start wherever you'd like.
 
 **Candidate:** Great problem. Before I jump into the architecture, let me clarify the scope and constraints so we're aligned on what "similar" means in this context and what the business goals are.
 
-**First — what surface is this appearing on?** Is this the listing detail page (LDP) only, or also search results, emails, push notifications?
+**First - what surface is this appearing on?** Is this the listing detail page (LDP) only, or also search results, emails, push notifications?
 
 **Interviewer:** Let's focus on the listing detail page. The user is looking at Listing A, and we show K similar listings underneath.
 
 **Candidate:** Perfect. And what's the primary business objective? Are we optimizing for:
 
-- **Engagement** — clicks on similar listings to keep users browsing?
-- **Conversion** — bookings that originate from this carousel?
-- **Session depth** — reducing bounce rate from listing pages?
+- **Engagement** - clicks on similar listings to keep users browsing?
+- **Conversion** - bookings that originate from this carousel?
+- **Session depth** - reducing bounce rate from listing pages?
 
-**Interviewer:** Primarily conversion — we want users who might not book *this* listing to find one they will book. But engagement is a secondary metric.
+**Interviewer:** Primarily conversion - we want users who might not book *this* listing to find one they will book. But engagement is a secondary metric.
 
 **Candidate:** Understood. Let me also pin down a few constraints:
 
 1. **Scale.** How many active listings are we talking about? I'll assume on the order of **7M+ listings** globally (Airbnb-scale).
-2. **Latency.** Since this is on the listing detail page, the carousel should load as part of or shortly after the page — I'd target **< 200ms p99** for the ML inference path.
+2. **Latency.** Since this is on the listing detail page, the carousel should load as part of or shortly after the page - I'd target **< 200ms p99** for the ML inference path.
 3. **K.** We're showing maybe **12–20 similar listings** in the carousel, but generating a candidate set that's much larger.
 4. **Two-sided marketplace.** "Similar" needs to respect the guest's perspective (I want something like this listing) but also host availability and acceptance patterns.
 5. **Cold start.** New listings with no interaction history need to appear in similar listing results too.
@@ -44,7 +44,7 @@
 | **Guest behavior** | Users who viewed/booked A also viewed/booked B |
 | **Availability** | Similar open date ranges |
 
-The key insight is that **behavioral similarity often captures latent dimensions** that content features miss — like "vibe" or "trustworthiness signals" from review quality. So I'll design a system that combines both content-based and behavioral signals.
+The key insight is that **behavioral similarity often captures latent dimensions** that content features miss - like "vibe" or "trustworthiness signals" from review quality. So I'll design a system that combines both content-based and behavioral signals.
 
 ---
 
@@ -57,9 +57,9 @@ The key insight is that **behavioral similarity often captures latent dimensions
 ### Offline Metrics (Model Quality)
 
 - **Recall@K:** Of the listings a user eventually books or clicks in a session, what fraction appeared in our top-K similar listings? This directly measures candidate quality.
-- **NDCG@K (Normalized Discounted Cumulative Gain):** Measures ranking quality — are the best similar listings placed highest?
+- **NDCG@K (Normalized Discounted Cumulative Gain):** Measures ranking quality - are the best similar listings placed highest?
 - **MRR (Mean Reciprocal Rank):** How high does the first "relevant" (clicked/booked) listing appear?
-- **Hit Rate@K:** Binary — did at least one relevant listing appear in the top K?
+- **Hit Rate@K:** Binary - did at least one relevant listing appear in the top K?
 
 For embeddings specifically:
 
@@ -68,7 +68,7 @@ For embeddings specifically:
 
 ### Online Metrics (A/B Test)
 
-- **Primary: Booking Conversion Rate from Carousel** — `bookings originating from similar listings / impressions of carousel`
+- **Primary: Booking Conversion Rate from Carousel** - `bookings originating from similar listings / impressions of carousel`
 - **Secondary:**
   - Click-Through Rate (CTR) on the carousel
   - Session depth after viewing the carousel (pages/session)
@@ -78,14 +78,14 @@ For embeddings specifically:
 ### Guardrail Metrics
 
 - **Revenue per session** (shouldn't drop)
-- **Host-side fairness** — similar listings shouldn't always funnel traffic to the same top-rated listings; we need exposure equity
-- **Listing diversity in carousel** — we don't want 12 nearly identical listings; some variety in price/type/neighborhood helps
+- **Host-side fairness** - similar listings shouldn't always funnel traffic to the same top-rated listings; we need exposure equity
+- **Listing diversity in carousel** - we don't want 12 nearly identical listings; some variety in price/type/neighborhood helps
 
 **Interviewer:** Good. What about the tension between CTR and booking rate?
 
-**Candidate:** Great callout. CTR can be gamed by clickbait-y thumbnails or misleadingly low prices. I'd weight **booking rate as the north star** and use CTR as a diagnostic. If CTR goes up but bookings don't, we're showing attractive-looking but mismatched listings — that's worse than the baseline.
+**Candidate:** Great callout. CTR can be gamed by clickbait-y thumbnails or misleadingly low prices. I'd weight **booking rate as the north star** and use CTR as a diagnostic. If CTR goes up but bookings don't, we're showing attractive-looking but mismatched listings - that's worse than the baseline.
 
-Also, I'd track **downstream host rejection rate** — if guests inquire on a similar listing but the host rejects them at a higher rate, our similarity model might be matching listings but not matching guest-host compatibility.
+Also, I'd track **downstream host rejection rate** - if guests inquire on a similar listing but the host rejects them at a higher rate, our similarity model might be matching listings but not matching guest-host compatibility.
 
 ---
 
@@ -154,15 +154,15 @@ Also, I'd track **downstream host rejection rate** — if guests inquire on a si
 
 With 7M listings, we can't run a heavy neural ranker over all of them per request. So:
 
-- **Retrieval** uses cheap operations (ANN vector search) to narrow 7M → ~1000 candidates. The goal is **high recall** — don't miss good candidates. Precision can be low.
-- **Scoring** uses an expensive model on ~200 candidates. The goal is **high precision in ranking** — put the best at the top.
+- **Retrieval** uses cheap operations (ANN vector search) to narrow 7M → ~1000 candidates. The goal is **high recall** - don't miss good candidates. Precision can be low.
+- **Scoring** uses an expensive model on ~200 candidates. The goal is **high precision in ranking** - put the best at the top.
 - **Re-ranking** applies business logic and diversity constraints that are hard to encode in a model loss function.
 
 The total latency budget of 200ms is split roughly: 50ms retrieval + 10ms filtering + 80ms scoring + 10ms re-ranking + 50ms network/serialization overhead.
 
 ---
 
-## Phase 4: Retrieval — Embedding Design (Deep Dive) (~12 min)
+## Phase 4: Retrieval - Embedding Design (Deep Dive) (~12 min)
 
 **Interviewer:** Let's go deep on the retrieval stage. How would you build the embeddings?
 
@@ -170,7 +170,7 @@ The total latency budget of 200ms is split roughly: 50ms retrieval + 10ms filter
 
 ### Approach 1: Listing Embeddings from Click Sessions (Short-Term)
 
-**Intuition:** Treat a user's click session like a "sentence" in NLP. Each listing the user clicks is a "word." Listings that appear in similar contexts (same sessions) should have similar embeddings — just like Word2Vec.
+**Intuition:** Treat a user's click session like a "sentence" in NLP. Each listing the user clicks is a "word." Listings that appear in similar contexts (same sessions) should have similar embeddings - just like Word2Vec.
 
 **Training data construction:**
 
@@ -199,9 +199,9 @@ Where:
 
 **Airbnb's three key modifications:**
 
-**Modification 1 — Booked listing as global context:**
+**Modification 1 - Booked listing as global context:**
 
-For sessions that end in a booking, the booked listing $l_b$ is added as a "global context" that pairs with every listing in the session, not just those within the sliding window. The intuition: if a user booked listing B after viewing A, C, D — then A, C, D are all contextually related to B, regardless of window distance.
+For sessions that end in a booking, the booked listing $l_b$ is added as a "global context" that pairs with every listing in the session, not just those within the sliding window. The intuition: if a user booked listing B after viewing A, C, D - then A, C, D are all contextually related to B, regardless of window distance.
 
 The additional term added to the loss:
 
@@ -209,25 +209,25 @@ $$+ \log \frac{1}{1 + e^{-\mathbf{v}_{l_i}^{\top} \mathbf{v}'_{l_b}}}$$
 
 This upweights the booking signal, which is the strongest positive signal we have.
 
-**Modification 2 — Same-market negative sampling:**
+**Modification 2 - Same-market negative sampling:**
 
-Standard Word2Vec samples negatives from the global listing distribution $P_n(l) \propto f(l)^{3/4}$ (frequency-dampened unigram). But in a marketplace, most random negatives are geographically irrelevant — a listing in Tokyo is trivially different from one in Paris.
+Standard Word2Vec samples negatives from the global listing distribution $P_n(l) \propto f(l)^{3/4}$ (frequency-dampened unigram). But in a marketplace, most random negatives are geographically irrelevant - a listing in Tokyo is trivially different from one in Paris.
 
 Airbnb adds **hard negatives from the same market** (city/region). For each positive pair, they add negatives sampled from listings in the same city as the center listing. This forces the model to learn *within-market* distinctions (price tier, neighborhood, style) rather than just "these are in the same country."
 
 $$+ \sum_{k=1}^{n_{\text{hard}}} \mathbb{E}_{l_k \sim P_{\text{market}(l_i)}} \left[ \log \frac{1}{1 + e^{\mathbf{v}_{l_i}^{\top} \mathbf{v}'_{l_k}}} \right]
 $$
 
-**Modification 3 — Congregated search (adapting to marketplace search):**
+**Modification 3 - Congregated search (adapting to marketplace search):**
 
 In vacation rental search, a session tends to cluster in one market/city. Rather than treating each click as a flat "word," they leverage the fact that users compare similar listings in the same locale.
 
-**Embedding dimensionality:** d = 32. This is surprisingly low but sufficient — Airbnb found 32 floats captured location, price, type, architecture, and style. Higher dimensions didn't improve recall significantly but increased storage and ANN latency.
+**Embedding dimensionality:** d = 32. This is surprisingly low but sufficient - Airbnb found 32 floats captured location, price, type, architecture, and style. Higher dimensions didn't improve recall significantly but increased storage and ANN latency.
 
 **Training details:**
 - ~800M click sessions
 - SGD with learning rate 0.025 (linearly decayed)
-- Window size: entire session (not fixed context window) — because sessions are short (avg ~5–6 clicks)
+- Window size: entire session (not fixed context window) - because sessions are short (avg ~5–6 clicks)
 - Training: distributed across machines, daily retraining
 
 ### Approach 2: User-Type & Listing-Type Embeddings (Long-Term)
@@ -252,7 +252,7 @@ user_type = f(country, device_type, is_superguest,
               avg_price_booked, language, booking_count_bucket)
 ```
 
-Now construct booking sessions per user — ordered sequence of listing *types* they booked over time. Train embeddings in the **same vector space** as user types — so we can compute `cosine(user_type_embedding, listing_type_embedding)` for cross-entity similarity.
+Now construct booking sessions per user - ordered sequence of listing *types* they booked over time. Train embeddings in the **same vector space** as user types - so we can compute `cosine(user_type_embedding, listing_type_embedding)` for cross-entity similarity.
 
 This gives us a long-term preference signal: a user who historically books "modern 2BR apartments in European cities" will have their user-type embedding close to those listing-type embeddings.
 
@@ -262,7 +262,7 @@ This gives us a long-term preference signal: a user who historically books "mode
 
 **Candidate:** Three approaches, in order of preference:
 
-1. **Geo-neighbor averaging:** Find the 3 nearest existing listings within 10 miles that share the same listing type (category, price bucket) and average their embeddings. This is simple and effective — Airbnb uses this in production.
+1. **Geo-neighbor averaging:** Find the 3 nearest existing listings within 10 miles that share the same listing type (category, price bucket) and average their embeddings. This is simple and effective - Airbnb uses this in production.
 
 2. **Content-based projection network:** Train a small MLP that maps listing features (price, location, amenities, type, photo embeddings) → listing embedding space. This is a "warm-start" model trained on listings that have established embeddings.
 
@@ -365,14 +365,14 @@ These are the most powerful features for "similarity."
 
 **Interviewer:** What model architecture?
 
-**Candidate:** I'd use a **GBDT (Gradient Boosted Decision Trees)** — specifically **LambdaMART** — as the starting point, then consider a DNN ranker for V2.
+**Candidate:** I'd use a **GBDT (Gradient Boosted Decision Trees)** - specifically **LambdaMART** - as the starting point, then consider a DNN ranker for V2.
 
 **Why GBDT first:**
 
 1. **Handles heterogeneous features** (categorical, continuous, embeddings) without extensive preprocessing
-2. **Interpretable feature importances** — critical for debugging in production
-3. **Fast training and inference** — scoring 200 candidates in < 80ms is straightforward
-4. **Robust to feature scale differences** — no normalization needed
+2. **Interpretable feature importances** - critical for debugging in production
+3. **Fast training and inference** - scoring 200 candidates in < 80ms is straightforward
+4. **Robust to feature scale differences** - no normalization needed
 5. **Industry standard** at Airbnb, Booking.com, and most marketplace rankers for v1
 
 **Why LambdaMART specifically:**
@@ -388,7 +388,7 @@ Where:
 - $\Delta \text{NDCG}_{ij}$ is the change in NDCG if $i$ and $j$ were swapped
 - $\sigma$ is a scaling parameter
 
-This means the model focuses gradient on pairs where a swap would significantly improve the ranking — rather than treating all pairs equally.
+This means the model focuses gradient on pairs where a swap would significantly improve the ranking - rather than treating all pairs equally.
 
 **Label generation for training:**
 
@@ -396,7 +396,7 @@ We need relevance labels. I'd use a multi-grade scheme:
 
 | Label | Signal | Weight |
 |-------|--------|--------|
-| 0 | Impression only (no click) | — |
+| 0 | Impression only (no click) | - |
 | 1 | Click on listing B from carousel | Low |
 | 2 | Click → viewed listing B for > 30s | Medium |
 | 3 | Click → added to wishlist or contacted host | High |
@@ -442,7 +442,7 @@ Where $\odot$ is element-wise product (captures multiplicative interactions) and
 
 **Candidate:** The re-ranker applies constraints that are hard to encode in a differentiable loss function:
 
-**1. Diversity (MMR — Maximal Marginal Relevance):**
+**1. Diversity (MMR - Maximal Marginal Relevance):**
 
 We don't want 12 listings from the same building. MMR re-ranks by balancing relevance and diversity:
 
@@ -451,14 +451,14 @@ $$\text{MMR}(l_i) = \lambda \cdot \text{score}(l_i) - (1 - \lambda) \cdot \max_{
 Where $S_{\text{selected}}$ is the set of already-selected listings and $\lambda \approx 0.7$ trades off relevance vs. diversity. We greedily select listings one by one.
 
 Diversity dimensions to penalize:
-- Same host (hard filter — max 2 per host)
+- Same host (hard filter - max 2 per host)
 - Same building/complex
 - Same exact price point
 - Too similar photo thumbnails
 
 **2. Price Spread:**
 
-Ensure the carousel includes options at slightly higher and lower price points than listing A. Users viewing a $200/night listing should see some $150 and some $250 options — this helps anchor value perception and captures users with flexible budgets.
+Ensure the carousel includes options at slightly higher and lower price points than listing A. Users viewing a $200/night listing should see some $150 and some $250 options - this helps anchor value perception and captures users with flexible budgets.
 
 **3. Availability Boost:**
 
@@ -466,7 +466,7 @@ Listings with open availability for the user's searched dates (if known) get a s
 
 **4. Explore/Exploit:**
 
-Reserve 1–2 of the K slots for exploration — show a random or low-confidence listing to collect signal. This helps:
+Reserve 1–2 of the K slots for exploration - show a random or low-confidence listing to collect signal. This helps:
 - New listings get exposure (cold-start)
 - Overcome popularity bias
 - Continuously improve the model
@@ -512,7 +512,7 @@ We use an **epsilon-greedy** strategy with $\epsilon \approx 0.1$, or a Thompson
 
 **Ranker retraining cadence:** Weekly with daily feature refresh. The ranking model is more stable, but features like "days since last booking" and "current review score" need daily updates in the feature store.
 
-**Data splitting:** Temporal split only — train on weeks 1–8, validate on week 9, test on week 10. Never random split, because of temporal leakage (user behavior patterns leak across time).
+**Data splitting:** Temporal split only - train on weeks 1–8, validate on week 9, test on week 10. Never random split, because of temporal leakage (user behavior patterns leak across time).
 
 ### Serving Architecture
 
@@ -558,7 +558,7 @@ We use an **epsilon-greedy** strategy with $\epsilon \approx 0.1$, or a Thompson
 
 **Key infrastructure decisions:**
 
-1. **Embedding storage:** All 7M listing embeddings (32-dim float32) = ~900MB. Fits entirely in Redis. Lookup is O(1) — sub-millisecond.
+1. **Embedding storage:** All 7M listing embeddings (32-dim float32) = ~900MB. Fits entirely in Redis. Lookup is O(1) - sub-millisecond.
 
 2. **ANN service:** Deployed as a stateful microservice with HNSW index loaded in memory. Sharded by market. We use **index replicas** for redundancy and horizontal scaling during peak traffic.
 
@@ -568,7 +568,7 @@ We use an **epsilon-greedy** strategy with $\epsilon \approx 0.1$, or a Thompson
    
 4. **Ranking service:** Stateless, horizontally scalable. Model loaded as a serialized LightGBM or XGBoost model. Scoring 200 candidates takes ~10–30ms on a single CPU core.
 
-5. **Caching:** The similar listings result for Listing A doesn't change minute-to-minute. We cache results with a **TTL of 1 hour** (invalidated on listing updates). This dramatically reduces compute during peak hours — a popular listing might be viewed thousands of times per hour.
+5. **Caching:** The similar listings result for Listing A doesn't change minute-to-minute. We cache results with a **TTL of 1 hour** (invalidated on listing updates). This dramatically reduces compute during peak hours - a popular listing might be viewed thousands of times per hour.
 
 **Interviewer:** What about the latency breakdown?
 
@@ -597,7 +597,7 @@ With caching hit rates around 60–70% for popular listings, the effective avera
 
 ### Position Bias
 
-The carousel has a strong position bias — users click the first few items disproportionately. If we naïvely train on click data, the model learns "things shown in position 1 are good" — a self-reinforcing loop.
+The carousel has a strong position bias - users click the first few items disproportionately. If we naïvely train on click data, the model learns "things shown in position 1 are good" - a self-reinforcing loop.
 
 **Mitigation:**
 - **Inverse Propensity Weighting (IPW):** Weight each training example by $1/P(\text{position}_k)$, where $P$ is the estimated CTR purely due to position. This debiases the gradient.
@@ -621,7 +621,7 @@ Popular listings get shown more → get more clicks → rank higher → get show
 ### A/B Testing Considerations
 
 - **Randomization unit:** User-level (not session-level) to avoid within-user contamination.
-- **Novelty effect:** Run the test for at least 2 weeks — initial CTR lift often decays.
+- **Novelty effect:** Run the test for at least 2 weeks - initial CTR lift often decays.
 - **Network effects:** If we improve one listing's carousel, it might cannibalize traffic from another listing. We need to monitor **platform-level booking rate**, not just carousel-level conversion.
 
 ---
@@ -642,7 +642,7 @@ Where $\mathbf{v}_{\text{text}}$ comes from an encoding of the listing descripti
 
 **2. Graph Neural Networks (Medium Impact)**
 
-Build a listing graph where edges represent co-click or co-booking relationships. Run GraphSAGE to learn embeddings that capture multi-hop neighborhood structure — listing A is similar to listing C because users who liked A also liked B, and users who liked B also liked C.
+Build a listing graph where edges represent co-click or co-booking relationships. Run GraphSAGE to learn embeddings that capture multi-hop neighborhood structure - listing A is similar to listing C because users who liked A also liked B, and users who liked B also liked C.
 
 **3. Real-Time Session Personalization (High Impact)**
 
@@ -650,13 +650,13 @@ Maintain a running embedding of the user's current session:
 
 $$\mathbf{u}_{\text{session}} = \frac{1}{|H_c|} \sum_{l \in H_c} \mathbf{v}_l - \frac{1}{|H_s|} \sum_{l \in H_s} \mathbf{v}_l$$
 
-Where $H_c$ is the set of clicked listings and $H_s$ is the set of skipped listings. This session vector captures real-time preference shifts — if the user started looking at apartments but switched to houses, the similar listings should adapt immediately.
+Where $H_c$ is the set of clicked listings and $H_s$ is the set of skipped listings. This session vector captures real-time preference shifts - if the user started looking at apartments but switched to houses, the similar listings should adapt immediately.
 
 This is streamed via Kafka and updated per-click.
 
 **4. Contextual Bandits for Exploration**
 
-Replace epsilon-greedy with a LinUCB or neural contextual bandit for the exploration slots. This makes exploration more targeted — showing listings that are uncertain but plausibly good, rather than random.
+Replace epsilon-greedy with a LinUCB or neural contextual bandit for the exploration slots. This makes exploration more targeted - showing listings that are uncertain but plausibly good, rather than random.
 
 **5. Cross-Market Discovery**
 
@@ -697,4 +697,4 @@ Behavioral similarity alone → cold start problem, popularity bias
 Combine both via embeddings + learned ranker → best of both worlds
 ```
 
-**The key structural insight is the funnel shape:** Cheap retrieval (ANN on pre-computed embeddings) filters millions to thousands, then an expensive ranker (GBDT/DNN with rich features) orders hundreds. This pattern — retrieval → filtering → ranking → re-ranking — shows up in search, ads, recommendations, and feed ranking across every major tech company. Once you internalize this four-stage funnel, you can adapt it to any "find similar X" problem.
+**The key structural insight is the funnel shape:** Cheap retrieval (ANN on pre-computed embeddings) filters millions to thousands, then an expensive ranker (GBDT/DNN with rich features) orders hundreds. This pattern - retrieval → filtering → ranking → re-ranking - shows up in search, ads, recommendations, and feed ranking across every major tech company. Once you internalize this four-stage funnel, you can adapt it to any "find similar X" problem.
