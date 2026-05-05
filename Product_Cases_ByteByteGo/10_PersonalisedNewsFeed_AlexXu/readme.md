@@ -44,7 +44,7 @@ Here is a typical interaction between a candidate and an interviewer.
 
 **Interviewer:** We have almost 3 billion users in total. Around 2 billion are daily active users who check their feeds twice a day.
 
-Let's summarize the problem statement. We are asked to design a personalized news feed system. The system retrieves unseen posts or posts with unseen comments, and ranks them based on how engaging they are to the user. This should take no longer than 200ms200 \\mathrm{~ms}200ms. The objective of the system is to increase user engagement.
+Let's summarize the problem statement. We are asked to design a personalized news feed system. The system retrieves unseen posts or posts with unseen comments, and ranks them based on how engaging they are to the user. This should take no longer than 200 $\mathrm{~ms}$. The objective of the system is to increase user engagement.
 
 ### Frame the problem as an ML task
 
@@ -101,7 +101,7 @@ Figure 10.2: A personalized news feed system’s input-output
 
 A personalized news feed system produces a ranked list of posts based on how engaging the posts are to a user. Pointwise Learning to Rank (LTR) is a simple yet effective approach that personalizes news feeds by ranking posts based on engagement scores. To understand how to compute engagement scores between users and posts, let's examine a concrete example.
 
-As Figure 10.310.310.3 shows, we employ several binary classifiers to predict the probabilities of various implicit and explicit reactions for a ⟨\\langle⟨ user, post ⟩\\rangle⟩ pair.
+As Figure 10.310.310.3 shows, we employ several binary classifiers to predict the probabilities of various implicit and explicit reactions for a $\langle \text{user}, \text{post} \rangle$ pair.
 
 ![Image represents a machine learning model predicting user reactions to a social media post.  At the top is a table showing predicted probabilities for various user reactions:  Click (23%), Like (48%), Comment (12%), Share (4%), Friendship request (0.1%), Hide (0.005%), and Block (0.0003%).  Below the table, a dashed box encloses several classifiers: a Click classifier, a Like classifier, an ellipsis indicating other classifiers, and a Block classifier.  These classifiers process information from a 'Post' (represented by a box with a mountain icon and a small user icon and text input field) and a 'User' (represented by a person icon). Arrows indicate that the Post and User data are input to each classifier.  Finally, an upward arrow connects the output of the classifiers to the probability table at the top, suggesting that the classifiers' predictions contribute to the overall reaction probability estimates.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fpersonalized-news-feed%2Fch10-03-1-GNTAVUFJ.png&w=3840&q=75)
 
@@ -345,11 +345,11 @@ Figure 10.9: Multi-task DNN
 
 We explained multi-task learning in Chapter 5, Harmful Content Detection, so we only briefly discuss it here. In summary, multi-task learning refers to the process of learning multiple tasks simultaneously. This allows the model to learn the similarities between tasks and avoid unnecessary computations. For a multi-task neural network model, it's essential to choose an appropriate architecture. The choice of architecture and the associated hyperparameters are usually determined by running experiments. That means training and evaluating the model on different architectures and choosing the one which leads to the best result.
 
-##### Improving the DNN architecture for passive users
+##### `Improving the DNN architecture for passive users`
 
 So far, we have employed a DNN to predict reactions such as shares, likes, clicks, and comments. However, many users use the platform passively, meaning they do not interact much with the content on their timelines. For such users, the current DNN model will predict very low probabilities for all reactions, since they rarely react to posts. Therefore, we need to change the DNN architecture to consider passive users.
 
-For this to work, we add two implicit reactions to the list of tasks:
+`For this to work, we add two implicit reactions to the list of tasks:`
 
 - Dwell-time: the time a user spends on a post.
 - Skip: if a user spends less than t seconds (e.g., 0.50.50.5 seconds) on a post, then that post can be assumed to have been skipped by the user.
@@ -366,9 +366,9 @@ Figure 10.10: Multi-task DNN model with two new tasks
 
 In this step, we construct the dataset from raw data. Since the DNN model needs to learn multiple tasks, positive and negative data points are created for each (e g., click, like, etc.)
 
-We will use the reaction type of "like" as an example to explain how to create positive/negative data points. Each time a user likes a post, we add a data point to our dataset, compute ⟨\\langle⟨ user, post ⟩\\rangle⟩ features, and then label it as positive.
+We will use the reaction type of "like" as an example to explain how to create positive/negative data points. Each time a user likes a post, we add a data point to our dataset, compute $\langle \text{user}, \text{post} \rangle$ features, and then label it as positive.
 
-To create negative data points, we chose impressions that didn't lead to a "like" reaction. Note that the number of negative data points is usually much higher than positive data points. To avoid having an imbalanced dataset, we create negative data points to equal the number of positive data points. Figure 10.11 shows positive and negative data points for the "like" reaction.
+To create negative data points, we chose impressions that didn't lead to a "like" reaction. Note that the number of negative data points is usually much higher than positive data points. To avoid having an imbalanced dataset, `we create negative data points to equal the number of positive data points`. Figure 10.11 shows positive and negative data points for the "like" reaction.
 
 ![Image represents a tabular dataset used for training a machine learning model, likely for a binary classification task.  The table is divided into five columns: '#' representing a unique identifier for each data instance (rows 1, 2, and 3); 'User features', 'Post features', and 'Affinity features' each containing a vector of numerical features; and 'Label' indicating the class of each instance ('Positive' or 'Negative'). Each row represents a single data point.  For example, row 1 shows a data point with 'User features' vector [1, 0, 1, 0.8, 0.1, 1], 'Post features' vector [0, 1, 1, 0.4, 0], 'Affinity features' vector [0.9, 0.6, 0.3, 8, 0], and a 'Positive' label.  The features are likely extracted from user data, post content, and the affinity between the user and the post. The data is structured to be directly used as input for a machine learning algorithm, where each row is a sample and the columns represent the features and the target variable.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fpersonalized-news-feed%2Fch10-11-1-M52YEXWP.png&w=3840&q=75)
 
@@ -405,13 +405,17 @@ We use the following metrics to measure user engagement from various angles:
 
 **CTR.** The ratio between the number of clicks and impressions.
 
-CTR= number of clicked posts  number of impressions C T R=\\frac{\\text { number of clicked posts }}{\\text { number of impressions }}CTR= number of impressions  number of clicked posts ​
+```math
+\text{CTR}= \frac{\text { number of clicked posts }}{\text { number of impressions }} ​
+```
 
 A high CTR does not always indicate more user engagement. For example, users may click on a low-value clickbait post, and quickly realize it is not worth reading. Despite this limitation, it is an important metric to track.
 
 **Reaction rates.** These are a set of metrics that reflect user reactions. For example, a like rate measures the ratio between posts liked and the total number of posts displayed in users' feeds.
 
-Like rate = number of liked posts  number of impressions \\text { Like rate }=\\frac{\\text { number of liked posts }}{\\text { number of impressions }} Like rate = number of impressions  number of liked posts ​
+```math
+\text{Like rate}= \frac{\text { number of liked posts }}{\text { number of impressions }} ​
+``` 
 
 Similarly, we track other reactions such as "share rate", "comment rate", "hide rate", "block rate", and "skip rate". These are stronger signals than CTR, as users have explicitly expressed a preference.
 

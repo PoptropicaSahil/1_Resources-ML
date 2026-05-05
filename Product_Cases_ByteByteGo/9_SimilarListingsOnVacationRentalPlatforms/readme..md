@@ -12,7 +12,7 @@
 
 | Question | Why it matters |
 |---|---|
-| What is the primary goal — engagement (clicks) or conversion (bookings)? | Drives choice of loss function and labels |
+| What is the primary goal - engagement (clicks) or conversion (bookings)? | Drives choice of loss function and labels |
 | How many listings exist globally? | Shapes nearest-neighbour index design |
 | Is the module on the listing detail page only, or also search results? | Determines latency & serving SLA |
 | Do we care about diversity (not showing 10 near-identical listings)? | Adds post-ranking re-rank step |
@@ -41,7 +41,7 @@ This is a key conceptual point interviewers probe.
 | Cold-start for users | Major problem | Less critical (session is the context) |
 | Personalization | Per-user | Per-session (current listing as context) |
 
-**Core insight:** A user browsing a 3BR beachfront villa in Malibu right now has a *very different* intent than their booking history would suggest. The *current listing* is the best proxy for their session intent.
+`**Core insight:** A user browsing a 3BR beachfront villa in Malibu right now has a *very different* intent than their booking history would suggest. The *current listing* is the best proxy for their session intent.`
 
 ---
 
@@ -187,18 +187,18 @@ For a re-ranking layer on top of embedding similarity, additional features can b
 
 ### Prediction Pipeline Detail
 
-**Step 1 — Embedding fetch service:**
+**Step 1 - Embedding fetch service:**
 
 - If query listing has been seen during training → look up pre-computed embedding from key-value store (Redis / DynamoDB)
 - If query listing is new (cold start) → fall back to content-based embedding (see §6)
 
-**Step 2 — Nearest neighbour search:**
+**Step 2 - Nearest neighbour search:**
 
 - Use Approximate Nearest Neighbour (ANN) with FAISS (IVF + HNSW) or ScaNN
 - Retrieve top-K candidates (K = 100–500 before re-ranking)
 - Filter by availability, price range, geography if query context available
 
-**Step 3 — Re-ranking:**
+**Step 3 - Re-ranking:**
 
 - Apply lightweight GBM (LightGBM/XGBoost) or MLP re-ranker
 - Features: embedding similarity score + listing features + session context
@@ -380,7 +380,7 @@ Similar listing score decomposition:
 ## 13. Common Follow-Up Questions
 
 **Q: How do you handle the position bias in training data?**
-> Listings shown at the top of search results get clicked more regardless of quality. Use Inverse Propensity Scoring (IPS) — downweight clicks on top positions, upweight clicks on lower positions.
+> Listings shown at the top of search results get clicked more regardless of quality. Use Inverse Propensity Scoring (IPS) - downweight clicks on top positions, upweight clicks on lower positions.
 
 **Q: How would you personalise similar listings per user?**
 > Two approaches: (1) train user embeddings alongside listing embeddings (like AirBnb's real-world2vec), then bias ANN retrieval towards listings similar to user's past bookings. (2) Add user features to the re-ranker.
@@ -388,7 +388,7 @@ Similar listing score decomposition:
 **Q: How do you keep the index fresh without full daily retraining?**
 > Use a two-tier system: (1) incremental fine-tuning on last 24h session data (fast, cheap), (2) weekly full retraining. New listings get content-based embeddings injected into the live index without retraining.
 
-**Q: What if a user is viewing a listing but hasn't searched with dates — how do you filter candidates?**
+**Q: What if a user is viewing a listing but hasn't searched with dates - how do you filter candidates?**
 > Relax the availability filter and rank by similarity only. Surface a "check availability" CTA instead of blocking the recommendations.
 
 **Q: How do you prevent filter bubbles (only showing similar-priced listings)?**
@@ -396,4 +396,4 @@ Similar listing score decomposition:
 
 ---
 
-*Reference: Airbnb Engineering Blog — "Listing Embeddings in Search Ranking" and "ML-Powered Search Ranking of Airbnb Experiences"*
+*Reference: Airbnb Engineering Blog - "Listing Embeddings in Search Ranking" and "ML-Powered Search Ranking of Airbnb Experiences"*
