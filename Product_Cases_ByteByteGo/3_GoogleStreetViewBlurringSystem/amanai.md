@@ -1,5 +1,7 @@
 # Aman's AI Journal • Google Street View Blurring
 
+> This doc is taken from [Aman's AI Journal](https://aman.ai/mlsysdes/GoogleStreetViewBlurring/). I don't like it that he didn't credit the original authors (Alex Xu) in his doc, even though he COPIED content as-is. There are fragments of ChatGPT responses too. Unprofessional. Unethical.
+
 * [Overview](#overview)
   * [Requirements](#requirements)
 * [ML Objective](#ml-objective)
@@ -50,20 +52,19 @@ ML Objective
   * The first task is a regression problem since the location can be represented by (x,y) coordinates, which are numeric values. The second task can be framed as a multi-class classification problem.
 * Traditionally, object detection architectures are divided into one-stage and two-stage networks. Recently, Transformer-based architectures such as DETR \[2\] have shown promising results, but in this chapter, we mainly explore two-stage and one-stage architectures.
 
-* Two-stage networks
-* As the name implies, two separate models are used in two-stage networks:
-
-* Region proposal network (RPN): scans an image and proposes candidate regions that are likely to be objects.
-* Classifier: processes each proposed region and classifies it into an object class.
+* Two-stage networks-
+  * `Region proposal network (RPN)`: scans an image and proposes candidate regions that are likely to be objects.
+  * `Classifier`: processes each proposed region and classifies it into an object class.
 
 ![](https://aman.ai/mlsysdes/assets/streetView/5.webp)
 
 * One-stage networks
-* In these networks, both stages are combined. Using a single network, bounding boxes and object classes are generated simultaneously, without explicit detection of region proposals. Figure 3.4 shows a one-stage network.
-* Commonly used one-stage networks include: YOLO \[6\] and SSD \[7\] architectures.
+  * In these networks, both stages are combined. Using a single network, bounding boxes and object classes are generated simultaneously, without explicit detection of region proposals. Figure 3.4 shows a one-stage network.
+  * Commonly used one-stage networks include: YOLO \[6\] and SSD \[7\] architectures.
+
 * One-stage vs. two-stage
-* Two-stage networks comprise two components that run sequentially, so they are usually slower, but more accurate.
-* In our case, the dataset contains 1 million images, which is not huge by modern standards. This indicates that using a two-stage network doesn’t increase the training cost excessively. So, for this exercise, we start with a two-stage network. When training data increases or predictions need to be made faster, we can switch to one-stage networks.
+  * Two-stage networks comprise two components that run sequentially, so they are usually slower, but more accurate.
+  * In our case, the dataset contains 1 million images, which is not huge by modern standards. This indicates that using a two-stage network doesn’t increase the training cost excessively. So, for this exercise, we start with a two-stage network. When training data increases or predictions need to be made faster, we can switch to one-stage networks.
 
 System input and output
 -----------------------
@@ -75,24 +76,19 @@ System input and output
 High level overview
 -------------------
 
-* Object detection I believe has two objectives:
-* two options: R-CNN: two stage detection: performance
+* Option1:
+  * R-CNN: two stage detection: performance
   * First scans the image and proposes the location of each class
   * Then runs a classifier on the proposed region and classifies it into the object class
-* YOLO: one stage: latency
+* Option2:
+  * YOLO: one stage: latency
 
 Data
 ----
 
-* Do we have traffic images already, annotated
-* Data engineering
-  * In the Introduction chapter, we discussed data engineering fundamentals. Additionally, it’s usually a good idea to discuss the specific data available for the task at hand. For this problem, we have the following data available:
 * Annotated dataset
-  * Street View images
-  * Let’s discuss each in more detail.
-* Annotated dataset
-  * Based on the requirements, we have 1 million annotated images. Each image has a list of bounding boxes and associated object classes.
-* Each bounding box is a list of 4 numbers: top left X and Y coordinates, followed by the width and height of the object.
+  * Based on the requirements, we have 1 million annotated images. Each image has a list of bounding boxes and associated object classes
+  * Each bounding box is a list of 4 numbers: top left X and Y coordinates, followed by the width and height of the object.
 * Street View images
   * These are the Street View images collected by the data sourcing team. The ML system processes these images to detect human faces and license plates. Table 3.2 shows the metadata of the images.
 
@@ -100,10 +96,8 @@ Data
 
 ### Feature engineering
 
-* During feature engineering, we first apply standard , such as resizing and normalization. After that, we increase the size of the dataset by using a data augmentation technique. Let’s take a closer look at this.
+* During feature engineering, we first apply standard , such as resizing and normalization. After that, we increase the size of the dataset by using a data augmentation technique. 
 
-* Data augmentation
-  * A technique called data augmentation involves adding slightly modified copies of original data, or creating new data artificially from the original. As the dataset size increases, the model is able to learn more complex patterns. This technique is especially useful when the dataset is imbalanced, as it increases the number of data points in minority classes.
 * A special type of data augmentation is image augmentation. Among the commonly used augmentation techniques are:
   * Random crop
   * Random saturation
@@ -154,11 +148,9 @@ Evaluation
 ![](assets/streetView/8.png)
 
 * When is a predicted bounding box considered correct? To answer this question, we need to understand the definition of Intersection Over Union.
-* Intersection Over Union (IOU): IOU measures the overlap between two bounding boxes.
+* `Intersection Over Union (IOU)`: `IOU measures the overlap between two bounding boxes.`
 * IOU determines whether a detected bounding box is correct. An IOU of 1 is ideal, indicating the detected bounding box and the ground truth bounding box are fully aligned. In practice, it’s rare to see an IOU of 1 . A higher IOU means the predicted bounding box is more accurate. An IOU threshold is usually used to determine whether a detected bounding box is correct (true positive) or incorrect (false positive). For example, an IOU threshold of 0.7 means any detection that has an overlap of 0.7 or higher with a ground truth bounding box, is a correct detection.
 * Now we know what IOU is and how to determine correct and incorrect bounding box predictions, let’s discuss metrics for offline evaluation.
-
-Certainly, here’s a reformatted version:
 
 * * *
 
@@ -175,7 +167,9 @@ Model development follows an iterative process, and offline metrics play a pivot
 
 Precision signifies the ratio of accurate detections to all detections throughout all images. A high precision indicates the system’s reliability in its detections.
 
-\\\[\\text{Precision} = \\frac{\\text{Correct detections}}{\\text{Total detections}}\\\]
+```math
+\text{Precision} = \frac{\text{Correct detections}}{\text{Total detections}}
+```
 
 To compute precision, it’s essential to select an IOU threshold. Let’s elucidate with an example.
 
@@ -185,11 +179,9 @@ _Figure 3.10_: Ground truth bounding boxes vs. detected bounding boxes
 
 Evaluating precision for three varied IOU thresholds—0.7, 0.5, and 0.1—gives us:
 
-* **IOU = 0.7**: \\(\\text{Precision}\_{0.7} = \\frac{2}{6} = 0.33\\)
-
-* **IOU = 0.5**: \\(\\text{Precision}\_{0.5} = \\frac{3}{6} = 0.5\\)
-
-* **IOU = 0.1**: \\(\\text{Precision}\_{0.1} = \\frac{4}{6} = 0.67\\)
+* **IOU = 0.7**: $(\text{Precision}\_{0.7} = \frac{2}{6} = 0.33)$
+* **IOU = 0.5**: $(\text{Precision}\_{0.5} = \frac{3}{6} = 0.5)$
+* **IOU = 0.1**: $(\text{Precision}\_{0.1} = \frac{4}{6} = 0.67)$
 
 A salient observation is that the precision fluctuates with different IOU thresholds, which makes discerning the model’s all-encompassing performance challenging using a singular precision score. AP offers a solution to this challenge.
 
@@ -197,9 +189,9 @@ A salient observation is that the precision fluctuates with different IOU thresh
 
 * AP measures precision over an assortment of IOU thresholds and takes their average.
 
-\\\[AP = \\int\_{0}^{1} P(r) \\, dr\\\]
+$$AP = \int_{0}^{1} P(r) \, dr$$
 
-* Here, \\(P(r)\\) denotes the precision at a particular IOU threshold, \\(r\\).
+* Here, $P(r)$ denotes the precision at a particular IOU threshold, $r$.
 
 * The integral can be estimated using a discrete summation over a fixed set of thresholds. For instance, the Pascal VOC2008 benchmark computes AP over 11 uniformly spaced threshold values.
 
@@ -207,9 +199,9 @@ A salient observation is that the precision fluctuates with different IOU thresh
 
 * mAP signifies the average of AP across all object classes and provides an overview of the model’s comprehensive performance.
 
-\\\[mAP = \\frac{1}{C} \\sum\_{c=1}^{C} AP\_c\\\]
+$$mAP = \frac{1}{C} \sum_{c=1}^{C} AP_c$$
 
-Where \\(C\\) is the total number of object classes the model can detect.
+Where $C$ is the total number of object classes the model can detect.
 
 mAP is widely adopted for evaluating object detection systems. For specifics on thresholds employed in benchmarking, references \[15\] and \[16\] can be consulted.
 
@@ -227,12 +219,19 @@ Serving
 
 * In this section, we first talk about a common problem that may occur in object detection systems: overlapping bounding boxes. Next, we propose an overall ML system design.
 * Overlapping bounding boxes
-  * When running an object detection algorithm on an image, it is very common to see bounding boxes overlap. This is because the RPN network proposes various highly overlapping bounding boxes around each object. It is important to narrow down these bounding boxes to a single bounding box per object during inference.
-  * A widely used solution is an algorithm called “Non-maximum suppression” (NMS) \[17\]. Let’s examine how it works.
-  * A widely used solution is an algorithm called “” (NMS) \[@nms\]. Let’s examine how it works.
+  * When running an object detection algorithm on an image, it is very common to see bounding boxes overlap. This is because the RPN network proposes various highly overlapping bounding boxes around each object. `It is important to narrow down these bounding boxes to a single bounding box per object during inference.`
+  * A widely used solution is an algorithm called `“Non-maximum suppression” (NMS)` \[17\]. Let’s examine how it works.
 * NMS
-  * NMS is a post-processing algorithm designed to select the most appropriate bounding boxes. It keeps highly confident bounding boxes and removes overlapping bounding boxes.
+  * `NMS is a post-processing algorithm designed to select the most appropriate bounding boxes. It keeps highly confident bounding boxes and removes overlapping bounding boxes.`
 * NMS is a commonly asked algorithm in ML system design interviews, so you’re encouraged to have a good understanding of it \[18\].
+
+```text
+<Taken from Gemini -- how NMS works>
+Filter: Removes bounding boxes with low confidence scores (e.g., below 0.25).
+Sort: Orders remaining boxes by their confidence scores in descending order.
+Select & Suppress: Selects the highest confidence box and removes other boxes that have high overlap (IoU) with it.
+Iterate: Repeats the process for remaining boxes until all are processed.
+```
 
 ML system design
 ----------------
