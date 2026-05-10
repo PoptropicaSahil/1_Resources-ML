@@ -22,7 +22,7 @@ Here is a typical interaction between a candidate and an interviewer.
 
 **Candidate:** Is there any training data available?
 
-**Interviewer:** Yes, let's assume we have ten million pairs of ⟨\\langle⟨ video, text query ⟩\\rangle⟩.
+**Interviewer:** Yes, let's assume we have ten million pairs of $\langle \text{video}, \text{text query} \rangle$.
 
 **Candidate:** Do we need to support other languages in the search system?
 
@@ -37,7 +37,7 @@ Here is a typical interaction between a candidate and an interviewer.
 **Interviewer:** As opposed to recommendation systems where
 personalization is essential, we do not necessarily have to personalize results in search systems. To simplify the problem, let's assume no personalization is required.
 
-Let's summarize the problem statement. We are asked to design a search system for videos. The input is a text query, and the output is a list of videos that are relevant to the text query. To search for relevant videos, we leverage both the videos' visual content and textual data. We are given a dataset of ten million ⟨\\langle⟨ video, text query ⟩\\rangle⟩ pairs for model training.
+Let's summarize the problem statement. We are asked to design a search system for videos. The input is a text query, and the output is a list of videos that are relevant to the text query. To search for relevant videos, we leverage both the videos' visual content and textual data. We are given a dataset of ten million $\langle \text{video}, \text{text query} \rangle$ pairs for model training.
 
 ### Frame the Problem as an ML Task
 

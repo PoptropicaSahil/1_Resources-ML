@@ -36,6 +36,8 @@ Things that I have liked -
 satisfaction (survey)
   - How to marry Offline and Online metrics? A/B test for external traffic / hold-out friends and family for internal traffic
 
+- `Event Recommendation System is the most complete one`
+
 - **two tower architectures are used for asymmetric problems**. If query is just an item ID, or is it an item + context?
   - If "similar listings" = listings similar to this listing (item-item) → Listing2Vec / single encoder
   - If "similar listings" = listings similar to this listing, for this user, in this session → Two-tower, because the query is now (listing, user, session_context) which is structurally different from a candidate listing

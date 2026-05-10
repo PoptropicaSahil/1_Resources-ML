@@ -22,6 +22,39 @@
 * [Serving](#serving)
 * [ML system design](#ml-system-design)
 
+Perplexity Good Points
+--------
+
+* A key insight for this problem is that **false negatives (unblurred faces) are exponentially more costly than false positives (incorrectly blurred artwork)**. This drives the entire architectural decision toward high-recall, two-stage filtering approaches rather than balanced precision-recall optimization.
+
+**Mathematical formulation:**
+
+- Cost(False Negative) >> Cost(False Positive)
+
+```math
+L = -[y*log(p) + (1-y)*log(1-p)] \dots \text{(Binary Cross-Entropy Loss)} \\
+L = w_FN * FN + w_FP * FP   \dots \text{(Weighted Loss emphasizing False Negatives)}
+```
+
+`(where w_FN >> w_FP)`
+
+* Also look for
+  * **Hand-counted Pixel Recall:** Do humans confirm faces are sufficiently blurred?
+  * **Pixel FPR:** What percentage of blurred pixels are false positives (image degradation)?
+  * **Per-demographic Recall:** Does accuracy vary significantly by ethnicity, age, lighting conditions?
+
+* Edge cases
+  1. `Tiny faces` (<12 pixels) → excluded from labeling
+  2. `Faces behind glass` → increased detector contrast sensitivity
+  3. `Partial/cut-off faces` → blur what's visible
+  4. `Overlapping boxes → use Non-Maximum Suppression (NMS)`
+  5. `Faces on billboards` → train only on real people; use secondary detector
+  6. `Angled license plates` → separate models for frontal (0-30°) and angled (30-90°)
+  7. `Occlusions (sunglasses, hats)` → include in training data explicitly
+  8. Regional regulations → parameter files per region (US vs EU blur intensity)
+  9. Concept drift → monitor confidence distribution; trigger retraining
+  10. Model failures → sanity checks and fallback to previous version
+
 Overview
 --------
 
@@ -49,7 +82,8 @@ ML Objective
 * In general, an object detection system has two responsibilities:
   * Predicting the location of each object in the image
   * Predicting the class of each bounding box (e.g., dog, cat, etc.)
-  * The first task is a regression problem since the location can be represented by (x,y) coordinates, which are numeric values. The second task can be framed as a multi-class classification problem.
+    * The first task is a regression problem since the location can be represented by (x,y) coordinates, which are numeric values. 
+    * The second task can be framed as a multi-class classification problem.
 * Traditionally, object detection architectures are divided into one-stage and two-stage networks. Recently, Transformer-based architectures such as DETR \[2\] have shown promising results, but in this chapter, we mainly explore two-stage and one-stage architectures.
 
 * Two-stage networks-
@@ -105,7 +139,7 @@ Data
   * Rotation and/or translation
   * Affine transformations
   * Changing brightness, saturation, or contrast
-* It is important to note that with certain types of augmentations, the ground truth bounding boxes also need to be transformed. For example, when rotating or flipping the original image, the ground truth bounding boxes must also be transformed.
+* `It is important to note that with certain types of augmentations, the ground truth bounding boxes also need to be transformed.` For example, when rotating or flipping the original image, the ground truth bounding boxes must also be transformed.
 * Data augmentation is used in offline or online forms.
 * Offline: Augment images before training
 * Online: Augment images on the fly during training
@@ -133,7 +167,8 @@ Model Training
 * Loss: Regression how aligned the predicted bounding boxes are with ground truth: MSE
 * Classification, how accurate are the probabilities of the predicted objects vs the ground truth
 * The process of training a neural network usually involves three steps: forward propagation, loss calculation, and backward propagation. Readers are expected to be familiar with these steps, but for more information, see \[11\]. In this section, we discuss the loss functions commonly used to detect objects.
-* An object detection model is expected to perform two tasks well. First, the bounding boxes of the objects predicted should have a high overlap with the ground truth bounding boxes. This is a regression task. Second, the predicted probabilities for each object class should be accurate. This is a classification task. Let’s define a loss function for each.
+* An object detection model is expected to perform two tasks well. First, the bounding boxes of the objects predicted should have a high overlap with the ground truth bounding boxes. This is a `regression task`. Second, the predicted probabilities for each object class should be accurate. This is a classification task. Let’s define a loss function for each.
+* `We combine (sum) both losses into a single loss to train the model`
 
 ![](https://aman.ai/mlsysdes/assets/streetView/7.png)
 
@@ -143,14 +178,18 @@ Evaluation
 * Precision: Fraction of correct detections / all total detections its done
 * During an interview, it is crucial to discuss how to evaluate an ML system. The interviewer usually wants to know which metrics you’d choose and why. This section describes how object detection systems are usually evaluated, and then selects important metrics for offline and online evaluations.
 * An object detection model usually needs to detect N different objects in an image. To measure the overall performance of the model, we evaluate each object separately and then average the results.
-* Figure 3.8 shows the output of an object detection model. It shows both the ground truth and detected bounding boxes. As shown, the model detected 6 bounding boxes, while we only have two instances of the object.
+* Figure 3.8 shows the output of an object detection model. It shows both the ground truth and detected bounding boxes. As shown, `the model detected 6 bounding boxes, while we only have two instances of the object.`
 
 ![](assets/streetView/8.png)
 
 * When is a predicted bounding box considered correct? To answer this question, we need to understand the definition of Intersection Over Union.
 * `Intersection Over Union (IOU)`: `IOU measures the overlap between two bounding boxes.`
-* IOU determines whether a detected bounding box is correct. An IOU of 1 is ideal, indicating the detected bounding box and the ground truth bounding box are fully aligned. In practice, it’s rare to see an IOU of 1 . A higher IOU means the predicted bounding box is more accurate. An IOU threshold is usually used to determine whether a detected bounding box is correct (true positive) or incorrect (false positive). For example, an IOU threshold of 0.7 means any detection that has an overlap of 0.7 or higher with a ground truth bounding box, is a correct detection.
+
+> `like venn diagram's intersection`
+
+* IOU determines whether a detected bounding box is correct. An IOU of 1 is ideal, indicating the detected bounding box and the ground truth bounding box are fully aligned. In practice, it’s rare to see an IOU of 1 . A higher IOU means the predicted bounding box is more accurate. An IOU threshold is usually used to determine whether a detected bounding box is correct (true positive) or incorrect (false positive). `For example, an IOU threshold of 0.7 means any detection that has an overlap of 0.7 or higher with a ground truth bounding box, is a correct detection.`
 * Now we know what IOU is and how to determine correct and incorrect bounding box predictions, let’s discuss metrics for offline evaluation.
+
 
 * * *
 
@@ -193,7 +232,7 @@ $$AP = \int_{0}^{1} P(r) \, dr$$
 
 * Here, $P(r)$ denotes the precision at a particular IOU threshold, $r$.
 
-* The integral can be estimated using a discrete summation over a fixed set of thresholds. For instance, the Pascal VOC2008 benchmark computes AP over 11 uniformly spaced threshold values.
+*` The integral can be estimated using a discrete summation over a fixed set of thresholds. For instance, the Pascal VOC2008 benchmark computes AP over 11 uniformly spaced threshold values.`
 
 ### Mean Average Precision (mAP)
 

@@ -220,7 +220,7 @@ Scoring all 500K events with the heavy ranking model would take ~500K × 0.5ms =
 └──────────────────────────────────────┘    └───────────────────────────────────┘
 ```
 
-**`C`:** One important detail for events specifically: the ANN index needs to be **refreshed frequently** - at least hourly - because events are constantly being created and expiring. Compare this to a product catalog where you might rebuild the index daily. I'd use an **incremental ANN index** (like Milvus or Vespa) that supports real-time inserts and deletes, rather than a batch-rebuilt FAISS index.
+**`C`:** One important detail for events specifically: the ANN index needs to be **refreshed frequently** - at least hourly - because events are constantly being created and expiring. `Compare this to a product catalog where you might rebuild the index daily. I'd use an **incremental ANN index** (like Milvus or Vespa) that supports real-time inserts and deletes, rather than a batch-rebuilt FAISS index.`
 
 ---
 
@@ -269,7 +269,7 @@ Now, for **cold-start** - this is the core challenge for events:
                     └──────────────────┴──────────────────────┘
 ```
 
-**`C`:** The two-tower model is particularly good for cold-start because the event tower can produce an embedding from **content features alone** - title, category, price, venue location - without needing any interaction history. The moment an event is created, it gets an embedding and enters the ANN index. This is a major advantage over pure collaborative filtering approaches like matrix factorization, where a new item with zero interactions has no representation.
+**`C`:** `The two-tower model is particularly good for cold-start because the event tower can produce an embedding from **content features alone** - title, category, price, venue location - without needing any interaction history. The moment an event is created, it gets an embedding and enters the ANN index. This is a major advantage over pure collaborative filtering approaches like matrix factorization, where a new item with zero interactions has no representation.`
 
 For **new users**, I'd use a two-phase approach: (1) show popular/trending events in their geo for the first session, (2) after they interact with 3-5 events, switch to the personalized model. We can also use an **onboarding preference quiz** (like Spotify Wrapped categories) to bootstrap the user embedding.
 
@@ -338,7 +338,7 @@ L(uᵢ) = −log( exp(uᵢᵀeᵢ / τ) / Σⱼ₌₁ᴺ exp(uᵢᵀeⱼ / τ) )
 
 Where τ (temperature) is typically 0.05–0.1. The denominator sums over all events in the batch - the other N−1 events serve as **implicit negatives**.
 
-**Key issue: popularity bias correction.** In-batch negatives are sampled proportional to their frequency in training data, so popular events appear disproportionately as negatives. This causes the model to under-recommend popular items (the logQ correction from the YouTube paper):
+`**Key issue: popularity bias correction.** In-batch negatives are sampled proportional to their frequency in training data, so popular events appear disproportionately as negatives. This causes the model to under-recommend popular items (the logQ correction from the YouTube paper):`
 
 ```
 corrected_logit(uᵢ, eⱼ) = uᵢᵀeⱼ / τ − log(pⱼ)
@@ -428,13 +428,13 @@ final_score = w₁·P(click) + w₂·P(RSVP|click)·P(click) + w₃·P(attend|RS
 **For retrieval (two-tower):**
 
 - *Positives:* (user, event) pairs where user RSVP'd or purchased a ticket
-- *Negatives:* In-batch negatives (all other events in the batch) + hard negatives sampled from events the user saw but didn't click
+- *Negatives:*` In-batch negatives (all other events in the batch) + hard negatives sampled from events the user saw but didn't click`
 
 **For ranking (DCN-v2):**
 
 - Training data comes from *logged impressions* - events that were actually shown to users
 - Label is click=1/0, RSVP=1/0, attend=1/0
-- Critical: only train on events the user actually *saw*, not all events. This avoids **selection bias**.
+- `Critical: only train on events the user actually *saw*, not all events. This avoids **selection bias**.`
 
 **Hard negative mining** is crucial for retrieval quality. I'd use a mix of:
 

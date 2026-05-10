@@ -30,7 +30,7 @@ Here is a typical interaction between a candidate and an interviewer.
 
 **Candidate:** Is there a specific type of engagement we are optimizing for? I assume there are different types of engagement, such as clicks, likes, and shares.
 
-**Interviewer:** Great question. Different reactions have different values on our platform. For example, liking a post is more valuable than only clicking it. Ideally, our system should consider major reactions when ranking posts. With that, I'll leave you to define "engagement" and choose what your model should optimize for.
+**Interviewer:** Great question. Different reactions have different values on our platform. `For example, liking a post is more valuable than only clicking it. Ideally, our system should consider major reactions when ranking posts. With that, I'll leave you to define "engagement" and choose what your model should optimize for.`
 
 **Candidate:** What are the major reactions available on the platform? I assume users can click, like, share, comment, hide, block another user, and send connection requests. Are there other reactions we should consider?
 
@@ -73,7 +73,7 @@ The advantage of this approach is that explicit signals usually carry more weigh
 
 The main disadvantage is that very few users actually express their opinions with explicit reactions. For example, a user may find a post engaging but not react to it. In this scenario, it's hard for the model to make an accurate prediction given the limited training data.
 
-**Option 3: Maximize a weighted score based on both implicit and explicit reactions**
+**Option 3: `Maximize a weighted score based on both implicit and explicit reactions`**
 
 In this option, we use both implicit and explicit reactions to determine how engaged a user is with a post. In particular, we assign a weight to each reaction, based on how valuable the reaction is to us. We then optimize the ML system to maximize the weighted score of reactions.
 
@@ -99,7 +99,7 @@ Figure 10.2: A personalized news feed system’s input-output
 
 #### Choosing the right ML category
 
-A personalized news feed system produces a ranked list of posts based on how engaging the posts are to a user. Pointwise Learning to Rank (LTR) is a simple yet effective approach that personalizes news feeds by ranking posts based on engagement scores. To understand how to compute engagement scores between users and posts, let's examine a concrete example.
+A personalized news feed system produces a ranked list of posts based on how engaging the posts are to a user. `Pointwise Learning to Rank (LTR) is a simple yet effective approach that personalizes news feeds by ranking posts based on engagement scores`. To understand how to compute engagement scores between users and posts, let's examine a concrete example.
 
 As Figure 10.310.310.3 shows, we employ several binary classifiers to predict the probabilities of various implicit and explicit reactions for a $\langle \text{user}, \text{post} \rangle$ pair.
 

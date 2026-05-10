@@ -71,7 +71,6 @@ The output of the model is a set of ranked images that are similar to the query 
 
 **Representation learning.** In representation learning \[3\], a model is trained to transform input data, such as images, into representations called embeddings. Another way of describing this is that the model maps input images to points in an N-dimensional space called embedding space. These embeddings are learned so that similar images have embeddings that are in close proximity to each other, in the space. Figure 2.3 illustrates how two similar images are mapped onto two points in close proximity within the embedding space. To demonstrate, we visualize image embeddings (denoted by ‘xxx’) in a 222-dimensional space. In reality, this space is NNN-dimensional, where NNN is the size of the embedding vector.
 
-
 ![alt text](readme-images/image-3.png)
 Figure 2.3: Similar images in the embedding space
 
@@ -207,7 +206,7 @@ An advantage of this method is that no manual work is required. We can implement
 
 ###### Which approach works best in our case?
 
-In an interview setting, it’s critical you propose various options and discuss their tradeoffs. There is usually not a single best solution that always works. Here, we use the self-supervision option for two reasons. Firstly, there is no upfront cost associated with it, since the process can be automated. Secondly, various frameworks such as SimCLR \[7\] have shown promising results when trained on a large dataset. Since we have access to billions of images on the platform, this approach might be a good fit.
+`In an interview setting, it’s critical you propose various options and discuss their tradeoffs`. There is usually not a single best solution that always works. Here, we use the self-supervision option for two reasons. Firstly, there is no upfront cost associated with it, since the process can be automated. Secondly, various frameworks such as SimCLR \[7\] have shown promising results when trained on a large dataset. Since we have access to billions of images on the platform, this approach might be a good fit.
 
 We can always switch to other labeling methods if the experiment results are unsatisfactory. For example, we can start with the self-supervision option and later use click data for labeling. We can also combine the options. For example, we may use clicks to build our initial training data and rely on human annotators to identify and remove noisy data points. Discussing different options and trade-offs with the interviewer is critical to make good design decisions.
 
@@ -257,7 +256,7 @@ Based on the given requirements, an evaluation dataset is available for offline 
 
 Figure 2.12: A data point from the evaluation dataset
 
-Now, let’s examine offline metrics that are commonly used in search systems. Note that search, information retrieval, and recommendation systems usually share the same offline metrics.
+Now, let’s examine offline metrics that are commonly used in search systems. `Note that search, information retrieval, and recommendation systems usually share the same offline metrics.`
 
 - Mean reciprocal rank (MRR)
 - Recall@k
@@ -265,11 +264,13 @@ Now, let’s examine offline metrics that are commonly used in search systems. N
 - Mean average precision (mAP)
 - Normalized discounted cumulative gain (nDCG)
 
-**MRR.** This metric measures the quality of the model by considering the rank of the first relevant item in each output list produced by the model, and then averaging them. The formula is:
+**MRR.** This metric measures the quality of the model by considering the `rank of the first relevant item` in each output list produced by the model, and then averaging them. The formula is:
 
-MRR=1m∑i=1m1rankiMRR= \\frac{1}{m} \\sum\_{i=1}^m \\frac{1}{rank\_i}MRR=m1​i=1∑m​ranki​1​
+```math
+MRR = \frac{1}{m} \sum_{i=1}^m \frac{1}{rank\_i}
+```
 
-Where mmm is the total number of output lists and rankirank\_iranki​ refers to the rank of the first relevant item in the _i_ th output list.
+Where `m` is the total number of output lists and $\text{rank}\_i$ refers to the `rank of the first relevant item` in the _i_ th output list.
 
 Figure 2.13 illustrates how this works. For each of the 4 ranked lists, we compute the reciprocal rank (RR) and then calculate the average value of the RRs to get the MRR.
 
@@ -287,30 +288,33 @@ Figure 2.14: MRR of two different models
 relevant items in the output list and the total number of relevant items
 available in the entire dataset. The formula is:
 
-recall@k= number of relevant items among the top k items in the output list  total relevant items \\text {recall@k} =\\frac{\\text { number of relevant items among the top } k \\text { items in the output list }}{\\text { total relevant items }}recall@k= total relevant items  number of relevant items among the top k items in the output list ​
+```math
+\text {recall@k} =\frac{\text { number of relevant items among the top } k \text { items in the output list }}{\text { total relevant items }} ​
+```
 
-Even though recall@k measures how many relevant items the model failed to include in the output list, this isn’t always a good metric. Let’s understand why not. In some systems, such as search engines, the total number of relevant items can be very high. This negatively affects the recall as the denominator is very large. For example, when the query image is an image of a dog, the database may contain millions of dog images. The goal is not to return every dog image but to retrieve a handful of the most similar dog images.
+Even though recall@k measures how many relevant items the model failed to include in the output list, this isn’t always a good metric. Let’s understand why not. `In some systems, such as search engines, the total number of relevant items can be very high. This negatively affects the recall as the denominator is very large. For example, when the query image is an image of a dog, the database may contain millions of dog images. The goal is not to return every dog image but to retrieve a handful of the most similar dog images.`
 
 Given recall@k doesn’t measure the ranking quality of the model, we will not use it.
 
 **Precision@k.** This metric measures the proportion of relevant items among the top k items in the output list. The formula is:
 
-precision@k = number of relevant items among the top k items in the output list k\\text { precision@k } =\\frac{\\text { number of relevant items among the top } {k} \\text { items in the output list }}{{k}} precision@k =k number of relevant items among the top k items in the output list ​
+```math
+\text { precision@k } =\frac{\text { number of relevant items among the top } k \text { items in the output list }}{k} ​
+```
 
-This metric measures how precise the output lists are, but it doesn’t consider the ranking quality. For example, in Figure 2.15, if we rank more relevant items higher in the list, the precision won’t change. This metric is not ideal for our use case, since we need to measure both the precision and ranking quality of the results.
+This metric measures how precise the output lists are, but it doesn’t consider the ranking quality. For example, in Figure 2.15, if we rank more relevant items higher in the list, the precision won’t change. `This metric is not ideal for our use case, since we need to measure both the precision and ranking quality of the results.`
 
 ![Image represents the outputs of two different models, Model 1 and Model 2, evaluated using Precision@5.  Each model's output is shown as a row of five boxes; a checkmark (✓) indicates a correct prediction, while an empty box represents an incorrect prediction. Model 1's output shows two correct predictions in the first two boxes, followed by three incorrect predictions. Model 2's output shows two correct predictions, one in the third and one in the fifth box, with three incorrect predictions.  To the right of each model's output, a box displays the Precision@5 score, calculated as the number of correct predictions (2) divided by the total number of predictions (5), resulting in a score of 2/5 for both models.  The image visually demonstrates the performance comparison of two models using a common ranking metric in information retrieval and machine learning.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvisual-search-system%2Fch2-15-J3OPLXRL.png&w=3840&q=75)
 
 Figure 2.15: Precision@5 of two different models
 
-**mAP.** This metric first computes the average precision (AP) for each output list, and then averages AP values.
+**mAP.** This metric first computes the `average precision (AP) for each output list`, and then averages AP values.
 
-Let’s first understand what AP is. It takes a list of kkk items, such as images, and averages the precision@k at different values of kkk. AP is high if more relevant items are located at the top of the list. For a list of size kkk, the AP formula is:
+Let’s first understand what AP is. It takes a list of `k` items, such as images, and `averages the precision@k at different values of` `k`. AP is high if more relevant items are located at the top of the list. For a list of size `k`, the AP formula is:
 
-AP=∑i=1k Precision@i if i’th item is relevant to the user  total relevant items AP= \\frac{\\sum\_{i=1}^k \\text { Precision@$i$ if i'th item is relevant to the user }}{\\text { total relevant items }}
-
-
-AP= total relevant items ∑i=1k​ Precision@i if i’th item is relevant to the user ​
+```math
+AP= \frac{\sum_{i=1}^k \text { Precision@$i$ if i'th item is relevant to the user }}{\text { total relevant items }}
+```
 
 Let’s look at an example to better understand the metric. Figure 2.16 shows AP calculations for each of the 4 output lists produced by the model.
 
@@ -318,7 +322,7 @@ Let’s look at an example to better understand the metric. Figure 2.16 shows AP
 
 Figure 2.16: mAP calculations
 
-Since we average precisions, the overall ranking quality of the list is considered. However, mAP is designed for binary relevances; in other words, it works well when each item is either relevant or irrelevant. For continuous relevance scores, nDCG is a better choice.
+Since we average precisions, the overall ranking quality of the list is considered. `However, mAP is designed for binary relevances; in other words, it works well when each item is either relevant or irrelevant. For continuous relevance scores, nDCG is a better choice.`
 
 **nDCG.** This metric measures the ranking quality of an output list and shows how good the ranking is, compared to the ideal ranking. First, let’s explain DCG and then discuss nDCG.
 
@@ -326,21 +330,33 @@ Since we average precisions, the overall ranking quality of the list is consider
 
 DCG calculates the cumulative gain of items in a list by summing up the relevance score of each item. Then the score is accumulated from the top of the output list to the bottom, with the score of each result discounted at lower ranks. The formula is:
 
-$$
-DCGp=∑i=1prelilog⁡2(i+1)\\mathrm{DCG\_p}=\\sum\_{i=1}^p \\frac{r e l\_i}{\\log \_2(i+1)}DCGp​=i=1∑p​log2​(i+1)reli​​
-$$
+```math
+DCG_p = ∑_{i=1}^p \frac{rel_i}{\log_2(i+1)} \dots (\text{usual formulation}) \
+DCG_p = ∑_{i=1}^p \frac{2^{rel_i} - 1}{\log_2(i+1)} \dots (\text{industry formulation to emphasize highly relevant items})
+```
 
-Where relirel\_ireli​ is the ground truth relevance score of the image ranked at location iii.
+Where
+
+- $p$: Rank position
+- $rel_i$: Relevance score of the item at position $i$
+- $\log_2(i+1)$: `Discounting factor`. As rank $i$ increases, denominator increases, penalises value of result's relevance
 
 ###### What is nDCG?
 
-Because DCG sums up the relevance scores of items and discounts their positions, the result of DCG could be any value. In order to get a more meaningful score, we need to normalize DCG. For this, nDCG divides the DCG by the DCG of an ideal ranking. The formula is:
+The problem with `raw DCG is that it depends on the length of the list and the specific query`. A query with 100 relevant results will naturally have a higher DCG than a query with only 2. This makes it impossible to compare performance across different queries. In order to get a more meaningful score, `we need to normalize DCG. For this, nDCG divides the DCG by the DCG of an ideal ranking`.`IDCG is the DCG score of the best possible ranking`
 
-$$
-nDCGp=DCGpIDCGp\\mathrm {nDCG\_p}=\\frac{DCG\_p}{IDCG\_p}nDCGp​=IDCGp​DCGp​​
-$$
+```math
+IDCG_p = ∑_{i=1}^{|\text{REL}|_p} \frac{rel_i}{\log_2(i+1)} \\
+NDCG_p = \frac{DCG_p}{IDCG_p}
+```
 
-Where IDCGp{IDCG\_p}IDCGp​ is the DCGDCGDCG of the ideal ranking (a ranking ordered by the relevance scores of items). Note that in a perfect ranking system, the DCG is equal to IDCG.
+| Metric | Focus | Why it matters |
+| --- | --- | --- |
+| Cumulative Gain (CG) | Total relevance | just "did we find good stuff?" |
+| DCG | Relevance + position | Penalizes good results if they are buried at the bottom |
+| NDCG | Relative quality | Normalises score to compare apples to oranges |
+
+Note that in a perfect ranking system, the DCG is equal to IDCG.
 
 Let’s use an example to better understand nDCG. In Figure 2.17, we can see a list of output images and their associated ground truth relevance scores produced by a search system.
 
@@ -356,7 +372,9 @@ We can compute nDCG in 3 steps:
 
 **Compute DCG:** The DCG for the current ranking produced by the model is:
 
-DCGp=∑i=1prelilog⁡2(i+1)=0log⁡2(2)+5log⁡2(3)+1log⁡2(4)+4log⁡2(5)+2log⁡2(6)=6.151\\mathrm {DCG\_p}=\\sum\_{i=1}^p \\frac{r e l\_i}{\\log \_2(i+1)}=\\frac{0}{\\log \_2(2)}+\\frac{5}{\\log \_2(3)}+\\frac{1}{\\log \_2(4)}+\\frac{4}{\\log \_2(5)}+\\frac{2}{\\log \_2(6)}=6.151DCGp​=i=1∑p​log2​(i+1)reli​​=log2​(2)0​+log2​(3)5​+log2​(4)1​+log2​(5)4​+log2​(6)2​=6.151
+```math
+DCG_p = ∑_{i=1}^p \frac{rel_i}{\log_2(i+1)} = \frac{0}{\log_2(2)} + \frac{5}{\log_2(3)} + \frac{1}{\log_2(4)} + \frac{4}{\log_2(5)} + \frac{2}{\log_2(6)} = 6.151
+```
 
 **Compute IDCG:** The ideal ranking calculation is the same as the DCG calculation, except that it recommends the most relevant items first (Figure 2.18).
 
@@ -366,13 +384,17 @@ Figure 2.18: Ideal ranking list
 
 The IDCG for the ideal ranking is:
 
-IDCGp=∑i=1νrelilog⁡2(i+1)=5log⁡2(2)+4log⁡2(3)+2log⁡2(4)+1log⁡2(5)+0log⁡2(6)=8.9543\\text {IDCG}\_p=\\sum\_{i=1}^\\nu \\frac{r e l\_i}{\\log \_2(i+1)}=\\frac{5}{\\log \_2(2)}+\\frac{4}{\\log \_2(3)}+\\frac{2}{\\log \_2(4)}+\\frac{1}{\\log \_2(5)}+\\frac{0}{\\log \_2(6)}=8.9543IDCGp​=i=1∑ν​log2​(i+1)reli​​=log2​(2)5​+log2​(3)4​+log2​(4)2​+log2​(5)1​+log2​(6)0​=8.9543
+```math
+IDCG_p = ∑_{i=1}^{|\text{REL}|_p} \frac{rel_i}{\log_2(i+1)} = \frac{5}{\log_2(2)} + \frac{4}{\log_2(3)} + \frac{2}{\log_2(4)} + \frac{1}{\log_2(5)} + \frac{0}{\log_2(6)} = 8.9543
+```
 
 **Divide DCG by IDCG:**
 
-nDCGp=DCGpIDCGp=6.1518.9543=0.6869\\mathrm {nDCG\_p}=\\frac{DCG\_p}{IDCG\_p}=\\frac{6.151}{8.9543}=0.6869nDCGp​=IDCGp​DCGp​​=8.95436.151​=0.6869
+```math
+NDCG_p = \frac{DCG_p}{IDCG_p} = \frac{6.151}{8.9543} = 0.6869
+```
 
-nDCG works well most times. Its primary shortcoming is that deriving ground truth relevance scores is not always possible. In our case, since the evaluation dataset contains similarity scores, we can use nDCG to measure the performance of the model during the offline evaluation.
+nDCG works well most times. `Its primary shortcoming is that deriving ground truth relevance scores is not always possible.` In our case, since the evaluation dataset contains similarity scores, we can use nDCG to measure the performance of the model during the offline evaluation.
 
 #### Online metrics
 
@@ -380,7 +402,9 @@ In this section, we explore a few commonly used online metrics for measuring how
 
 **Click-through rate (CTR).** This metric shows how often users click on the displayed items. CTR can be calculated using the following formula:
 
-CTR= Number of clicked images  Total number of suggested images \\mathrm{CTR}= \\frac{\\text { Number of clicked images }}{\\text { Total number of suggested images }}CTR= Total number of suggested images  Number of clicked images ​
+```math
+CTR = \frac{\text{Number of clicked images}}{\text{Total number of suggested images}}
+```
 
 A high CTR indicates that users click on the displayed items often. CTR is commonly used as an online metric in search and recommendation systems, as we will see in later chapters.
 
@@ -408,7 +432,7 @@ Figure 2.20: Embedding generation service
 
 Once we get the embedding of the query image, we need to retrieve similar images from the embedding space. The nearest neighbor service does this.
 
-Let’s define the nearest neighbor search more formally. Given a query point “q” and a set of other points S, it finds the closest points to “q” in set S. Note that an image embedding is a point in NNN-dimensional space, where NNN is the size of the embedding vector. Figure 2.21 shows the top 3 nearest neighbors of image q. We denote the query image as q, and other images as xxx.
+Let’s define the nearest neighbor search more formally. Given a query point “q” and a set of other points S, it finds the closest points to “q” in set S. Note that an image embedding is a point in N-dimensional space, where N is the size of the embedding vector. Figure 2.21 shows the top 3 nearest neighbors of image q. We denote the query image as q, and other images as x.
 
 ![Image represents a two-dimensional scatter plot illustrating a k-nearest neighbors (k-NN) algorithm.  The horizontal axis is labeled 'X1' and the vertical axis 'X2'. Multiple data points are depicted as 'x' symbols scattered across the plot. A dashed, irregularly shaped oval encloses a cluster of five 'x' points, including one labeled in red as 'q'.  The text 'k=3' is positioned near the oval, indicating that the algorithm considers the three nearest neighbors to classify a point. The arrangement shows that point 'q' and its three nearest neighbors are within the oval, suggesting they belong to the same class or cluster.  The remaining 'x' points outside the oval represent data points belonging to different classes or clusters, illustrating the algorithm's ability to group similar data points based on proximity.](https://bytebytego.com/_next/image?url=%2Fimages%2Fcourses%2Fmachine-learning-system-design-interview%2Fvisual-search-system%2Fch2-21-JWTLFCTR.png&w=3840&q=75)
 
@@ -436,15 +460,15 @@ NN algorithms can be divided into two categories: exact and approximate. Let’s
 
 ##### Exact nearest neighbor
 
-Exact nearest neighbor, also called linear search, is the simplest form of NN. It works by searching the entire index table, calculating the distance of each point with the query point q, and retrieving the kkk nearest points. The time complexity is O(N×D)O(N \\times D)O(N×D), where NNN is the total number of points and DDD is the point dimension.
+Exact nearest neighbor, also called linear search, is the simplest form of NN. It works by searching the entire index table, calculating the distance of each point with the query point q, and retrieving the $k$ nearest points. The time complexity is $O(N \times D)$, where $N$ is the total number of points and $D$ is the point dimension.
 
-In a large-scale system in which NNN may easily run into the billions, the linear time complexity is too slow.
+In a large-scale system in which $N$ may easily run into the billions, the linear time complexity is too slow.
 
 ##### Approximate nearest neighbor (ANN)
 
 In many applications, showing users similar enough items is sufficient, and there is no need to perform an exact nearest neighbor search.
 
-In ANN algorithms, a particular data structure is used to reduce the time complexity of NN search to sublinear (e.g., O(D×logN)O(D \\times logN)O(D×logN). They usually require up-front preprocessing or additional space.
+In `ANN algorithms`, a particular data structure is used to reduce the time complexity of NN search to sublinear (e.g., $O(D \times \log N)$). They usually require up-front preprocessing or additional space.
 
 ANN algorithms can be divided into the following three categories:
 
@@ -470,7 +494,7 @@ In the tree, non-leaf nodes split the space into two partitions given the criter
 
 Figure 2.23: Partitioned space by the tree
 
-Typical tree-based methods are R-trees \[18\], Kd-trees \[19\], and Annoy (Approximate Nearest Neighbor Oh Yeah) \[20\].
+Typical tree-based methods are R-trees \[18\], Kd-trees \[19\], and `Annoy (Approximate Nearest Neighbor Oh Yeah)` \[20\].
 
 ##### Locality sensitive hashing (LSH)
 
