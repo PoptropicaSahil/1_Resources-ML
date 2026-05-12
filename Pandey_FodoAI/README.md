@@ -107,7 +107,7 @@ Yes possible (detecting local patterns)
 
 - Local features (n-grams) **from embeddings**
 - Global features: since multiple layers stacked then overall topic/sentiment
-- Max/mean pooling: reduces dimensionality while (hopfully) preserving important features
+- Max/mean pooling: reduces dimensionality while (hopefully) preserving important features
 - Pass output to linear layer then classify
 
 ## Yolo v1 vs v2
@@ -219,6 +219,7 @@ Ans -
 
 - Key tensor shape = (batch, num_heads, seq_len, head_dim)
 - Value tensor shape = (batch, num_heads, seq_len, head_dim)
+
 Where:
 head_dim = hidden_size / num_heads = 4096 / 32 = 128
 So, each of K and V: (1, 32, 512, 128) so total 2 × this.
